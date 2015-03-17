@@ -1,0 +1,366 @@
+% SYS810 - Devoir 1.tex (Version 2.0)
+% ===============================================================================
+% ETS SYS810 Devoirs templates.
+% Based on ANUfinalexam.tex 2004; 2009, Timothy Kam, ANU School of Economics
+% Licence type: Free as defined in the GNU General Public Licence: http://www.gnu.org/licenses/gpl.html
+
+\documentclass[a4paper,12pt,fleqn]{article}
+\usepackage{amsmath}
+\usepackage{empheq}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{epigraph}
+
+% Insert your course information here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\institution}{École de Technologie Supérieure}
+\newcommand{\titlehd}{Simulation numérique des systèmes}
+\newcommand{\examtype}{Devoir 1}
+\newcommand{\examdate}{Février 2015}
+\newcommand{\examcode}{SYS 810}
+\newcommand{\lastwords}{Fin du devoir}
+
+% Insert recurent maths notations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\mean#1{\left< #1 \right>}
+
+% Common commands
+\newcommand{\Xzero}{x_0}
+\newcommand{\Xone}{x_1}
+\newcommand{\Xtwo}{x_2}
+
+% Commands for exercice one
+\newcommand{\Ir}{i_r}
+\newcommand{\Ic}{i_c}
+\newcommand{\Is}{i_2}
+\newcommand{\Il}{i_l}
+\newcommand{\DIl}{\frac{d\Il}{dt}}
+
+\newcommand{\Vc}{e_c}
+\newcommand{\Vi}{e_i}
+\newcommand{\Vr}{e_r}
+\newcommand{\Vl}{e_l}
+\newcommand{\DVc}{\frac{d\Vc}{dt}}
+
+
+\newcommand{\DXone}{\frac{d\Xone}{dt}}
+\newcommand{\DXtwo}{\frac{d\Xtwo}{dt}}
+
+\newcommand{\StateMatrixALineOne}{}
+\newcommand{\StateMatrixALineTwo}{}
+\newcommand{\StateMatrixBLineOne}{}
+\newcommand{\StateMatrixBLineTwo}{}
+
+% Commands for exercice two
+\newcommand{\X}{x}
+\newcommand{\Xl}{x_l}
+\newcommand{\dX}{\frac{d\X}{dt}}
+\newcommand{\ddX}{\frac{d^2\X}{dt^2}}
+
+\newcommand{\M}{M}
+\newcommand{\Kone}{k_1}
+\newcommand{\Ktwo}{k_2}
+\newcommand{\B}{b}
+\newcommand{\XlLit}{\frac{\M.g}{\Kone}+\Xzero}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\setcounter{MaxMatrixCols}{10}
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+
+% ANU Exams Office mandated margins and footer style
+\setlength{\topmargin}{0cm}
+\setlength{\textheight}{9.25in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{16cm}
+\pagestyle{fancy}
+\lhead{} 
+\chead{} 
+\rhead{} 
+\lfoot{} 
+\cfoot{\footnotesize{Page \thepage \ of \pageref{finalpage} -- \titlehd \ (\examcode)}} 
+\rfoot{} 
+
+\renewcommand{\headrulewidth}{0pt} %Do not print a rule below the header
+\renewcommand{\footrulewidth}{0pt}
+
+
+\begin{document}
+
+% Title page
+
+\begin{center}
+%\vspace{5cm}
+\large\textbf{\institution}
+\end{center}
+\vspace{1cm}
+
+\begin{center}
+\textit{ \examtype -- \examdate}
+\end{center}
+\vspace{1cm}
+
+\begin{center}
+\large\textbf{\titlehd}
+\end{center}
+
+\begin{center}
+\large\textbf{\examcode}
+\end{center}https://www.sharelatex.com/project/
+\vspace{4cm}
+
+% End title page
+
+
+\numberwithin{equation}{section}
+
+% START OF EXERCICE 1 %
+\newpage
+\section{\textbf{Problème 1}}
+Circuit électrique non linéaire
+\begin{enumerate}
+\item Écrire la représentation d'état non linéaire de ce circuit en choisissant comme variables d'état $x_1 = e_c$ et $x_2 = i_l$.
+
+Les équations du circuit s'écrivent:
+\begin{equation}\label{eq:1}
+\Is + \Ic = \Ir + \Il
+\end{equation}
+\begin{equation}\label{eq:2}
+\Vi = \Vc + \Vl
+\end{equation}
+\begin{equation}\label{eq:3}
+\Vi = \Vc + \Vr
+\end{equation}
+\begin{equation}\label{eq:4}
+\Vr = \Vl
+\end{equation}
+
+De \eqref{eq:1}  il vient:
+\begin{align}\label{eq:etat1}
+\begin{split}
+&\frac{1}{8}\Vc^3+C\DVc = \Il + \Ir\\
+\intertext{or de \eqref{eq:3}:}
+&\Ir = \frac{1}{R}\Vi - \frac{1}{R}\Vc\\
+\intertext{Il en résulte:}
+&\DVc = -\frac{1}{8C}\Vc^3-\frac{1}{RC}\Vc+\frac{1}{C}\Il+\frac{1}{RC}\Vi
+\end{split}
+\end{align}
+
+De \eqref{eq:2} il vient:
+\begin{align}\label{eq:etat2}
+\begin{split}
+\Vi& = \Vc + \Vl\\
+\Vi& = \Vc + L\DIl\\
+\DIl& = -\frac{1}{L}\Vc + \frac{1}{L}\Vi
+\end{split}
+\end{align}
+
+\renewcommand{\StateMatrixALineOne}{-\frac{1}{8C}\Xone^3-\frac{1}{RC}\Xone+\frac{1}{C}\Xtwo}
+\renewcommand{\StateMatrixALineTwo}{-\frac{1}{L}\Xone}
+\renewcommand{\StateMatrixBLineOne}{\frac{1}{RC}\cdot\Vi}
+\renewcommand{\StateMatrixBLineTwo}{ \frac{1}{L}\cdot\Vi}
+
+De \eqref{eq:etat1} et \eqref{eq:etat2} on déduit la matrice d'état:
+
+\begin{equation}\label{eq:stateVariables}
+\begin{bmatrix}
+\Xone\\
+\Xtwo\end{bmatrix}
+=
+\begin{bmatrix}
+\Vc\\
+\Il\end{bmatrix}
+\end{equation}
+
+\begin{equation}\label{eq:stateMatrix}
+\begin{bmatrix}
+\DXone\\
+\DXtwo\end{bmatrix}
+=
+\begin{bmatrix}
+\StateMatrixALineOne\\
+\StateMatrixALineTwo
+\end{bmatrix}
++
+\begin{bmatrix}
+\StateMatrixBLineOne\\
+\StateMatrixBLineTwo
+\end{bmatrix}
+\end{equation}
+
+
+
+\newpage
+\item Déterminer le point d'équilibre du système
+
+L'équilibre est donné par
+\begin{empheq}[left=\empheqlbrace]{align*}
+-\frac{1}{8C}\Vc^{*^3}-\frac{1}{RC}\Vc^{*}+\frac{1}{C}\Il^{*}+\frac{1}{RC}\mean{\Vi}& = 0\\
+-\frac{1}{L}\Vc^{*} + \frac{1}{L}\mean{\Vi}& = 0 
+\end{empheq}
+
+Soit:
+\begin{empheq}[left=\empheqlbrace]{align*}
+-\frac{1}{8C}\mean{\Vi}^3-\frac{1}{RC}\mean{\Vi}+\frac{1}{C}\Il^{*}+\frac{1}{RC}\mean{\Vi}& = 0\\
+\Vc^{*}& = \mean{\Vi}
+\end{empheq}
+
+Finalement:
+\begin{empheq}[left=\empheqlbrace]{align}
+\Il^{*}& = \frac{1}{8}\mean{\Vi}^3\\ 
+\Vc^{*}& = \mean{\Vi}
+\end{empheq}
+
+On linéarise autour du point d'équilibre:
+
+\begin{equation*}
+\dot{\delta}{x} = \left.\frac{\partial{F}}{\partial{X}}\right|_{(X_*,U_*)}\cdot\delta{x} + \left.\frac{\partial{F}}{\partial{U}}\right|_{(X_*,U_*)\cdot\delta{u}}
+\end{equation*}
+
+Soit:
+
+\begin{equation*}\label{eq:LinearStateMatrix}
+\dot{\delta}{x} =
+\begin{bmatrix}
+\left.\frac{\partial{\left(\StateMatrixALineOne\right)}}{\partial{x1}}\right|_{x1_*}&
+\left.\frac{\partial{\left(\StateMatrixALineOne\right)}}{\partial{x2}}\right|_{x2_*}\\
+\left.\frac{\partial{\left(\StateMatrixALineTwo\right)}}{\partial{x1}}\right|_{x1_*}&
+\left.\frac{\partial{\left(\StateMatrixALineTwo\right)}}{\partial{x2}}\right|_{x2_*}\\
+\end{bmatrix}
+\cdot\delta{x}
++
+\begin{bmatrix}
+\left.\frac{\partial{\left(\StateMatrixBLineOne\right)}}{\partial{\Vi}}\right|_{\mean{\Vi}}\\
+\left.\frac{\partial{\left(\StateMatrixBLineTwo\right)}}{\partial{\Vi}}\right|_{\mean{\Vi}}
+\end{bmatrix}
+\cdot\delta{u}
+\end{equation*}
+
+Par suite:
+
+\begin{equation*}\label{eq:LinearStateMatrix}
+\dot{\delta}{x} =
+\begin{bmatrix}
+\frac{-3}{8C}{\mean{\Vi}}^2-\frac{1}{RC}&
+\frac{1}{C}\\
+\frac{-1}{L}&
+0\\
+\end{bmatrix}
+\cdot\delta{x}
++
+\begin{bmatrix}
+\frac{1}{RC}\\
+\frac{1}{L}
+\end{bmatrix}
+\cdot\delta{u}
+\end{equation*}
+
+\newpage
+\item Exécuter la simulation
+
+Pour effectuer la simulation, nous utilisons une représentation du modèle exact supporté par une modèle réalisé avec SimPowers.
+
+Le modèle utilisé est le suivant:
+\newpage
+Le détail des sous-systèmes est le suivant:
+
+\newpage
+Pour chaque modèle, nous traçons les trois courbes:
+
+\newpage
+Ces courbes permettent de tirer les deux conclusions suivantes:
+
+\begin{itemize}
+  \item Le modèle linéarisé ne permet pas de représenter les modes transitoires. Ceci est normal puisque le modèle linéaire n'est représentatif qu'autour de l'équilibre. Les valeurs initiales sont donc faussées.
+  \item Le modèle linéarisé offre une plage de résultats relativement acceptables jusqu'à $A=1A$. Au dela les valeurs n'ont aucune représentativité au regard de la part alternative de la source de tension.
+\end{itemize}
+\end{enumerate}
+
+% START OF EXERCICE 2 %
+\newpage
+\section{\textbf{Problème 2}}
+Système masse ressort non linéaire
+\begin{enumerate}
+\item Écrire les équations différentielles qui modélisent ce système.
+
+Il est admis que la masse est située à $\Xzero$ à l'état d'équilibre.
+Par suite, l'équation d'équilibre s'écrit:
+
+\begin{equation*}\label{eq:EquilibriumMass}
+-\M.g+\Kone.(\Xl-\Xzero) = 0
+\end{equation*}
+
+Il en résulte l'élongation naturelle du ressort:
+
+\begin{equation}\label{eq:Xl}
+\Xl = \XlLit
+\end{equation}
+
+En ignorant le plateau amortisseur, on établit l'équation libre du mouvement:
+
+\begin{align}\label{eq:Eq21}
+\begin{split}
+\M.\ddX =& -\M.g-\Kone(\X-\Xl)\\
+\ddX =& -g-\frac{\Kone}{\M}(\X-\Xl)\\
+\ddX =& -g-\frac{\Kone}{\M}(\X-(\XlLit))
+\end{split}
+\end{align}
+
+Lorsque le plateau amortisseur est compressé, l'équation devient:
+
+\begin{align}\label{eq:Eq22}
+\begin{split}
+\ddX =& -g-\frac{\Kone}{\M}(\X-\Xl)-\frac{\Ktwo}{\M}(\X-\Xone)-\frac{\B}{\M}\dX
+\end{split}
+\end{align}
+
+Cependant, il convient de noter qu'en l'absence de viscosité le plateau ne peut exercer qu'une action positive sur la masse aussi l'hypothèse suivante est effectuée:
+
+\textit{
+La masse remontant plus vite que le plateau en raison de l'action du ressort $\Kone$, l'action du plateau n'est pas constante lorsque $\dX > 0$. Or la masse du plateau amortisseur étant considérée comme nulle on obtient:\\
+\begin{center}
+$\lim_{Mp_ \to 0} -\frac{\Ktwo}{Mp}(\X-\Xone)-\frac{\B}{Mp}\dX = \frac{d^2Xp}{dt^2} = \infty$\\
+\end{center}
+On considère donc le plateau en contact constant durant la phase de remontée.}
+
+Il en résulte l'équation finale:
+\begin{align}\label{eq:Eq23}
+\begin{split}
+\ddX =& -g-\frac{\Kone}{\M}(\X-(\XlLit))-f(\X)
+\end{split}
+\end{align}
+\begin{empheq}[left=\empheqlbrace]{align*}
+f(\X) &= 0 ,\ \X >= \Xone\\
+f(\X) &= -\frac{\Ktwo}{\M}(\X-\Xone)-\frac{\B}{\M}\dX ,\ \X < \Xone
+\end{empheq}
+
+\end{enumerate}
+\begin{center}
+\vspace{3cm}
+--------- \textit{\lastwords} ---------
+\end{center}
+
+
+\label{finalpage}
+
+\end{document}
