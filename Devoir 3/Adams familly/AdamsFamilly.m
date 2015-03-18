@@ -177,13 +177,14 @@ title('Open Loop Response, continuous simulation');
 % legend('Continuous system');
 % grid minor;
 % 
-% %Saving figures
-% wPaperPos = [0 0 8 5];
-% wPaperSize = [8 5];
-% 
-% set(h_zod, 'PaperPosition', wPaperPos); 
-% set(h_zod, 'PaperSize', wPaperSize);
-% saveas(h_zod, 'ZTransform ZoH', 'pdf')
+
+%Saving figures
+wPaperPos = [0 0 8 5];
+wPaperSize = [8 5];
+ 
+set(h_Cont, 'PaperPosition', wPaperPos); 
+set(h_Cont, 'PaperSize', wPaperSize);
+saveas(h_Cont, 'Continuous simulation', 'pdf')
 % 
 % set(h_tut, 'PaperPosition', wPaperPos); 
 % set(h_tut, 'PaperSize', wPaperSize); 
