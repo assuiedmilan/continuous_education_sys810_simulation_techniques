@@ -18,34 +18,8 @@ wDiscretizer = Discretizer(wSampleTime,...
     wContinuousSystemNum,...
     wContinuousSystemDen);
 
-wOneBaseBias = 1;
+[A,B,C,D] = wDiscretizer.mGetStateSpaceMatrix('observable');
 
-[n,d] = tfdata(wDiscretizer.mGetTf())
-d = fliplr(d{1})
-n = fliplr(n{1})
-o = length(d)-1;
-
-A = diag(ones(1,o-1),1)
-for i=0:o-1
-    A(o,o-i) = -d(o+1-i)
-end
-
-Beta = zeros(o+1,1)
-
-for k=o:-1:0
-    s= 0    
-    for i=1:o-k
-        s = s + d(o-i+wOneBaseBias)*Beta(k+i+wOneBaseBias)
-    end
-    
-    Beta(k+wOneBaseBias) = n(k+wOneBaseBias) - s;
-end
-
-wBetaN = Beta(0);
-B = Beta(1:size(
-
-    
-    
 % % Getting recursive equation and Tf for Zero Order Hold:
 % wYzod = wDiscretizer.mComputeRecursion(wInputSignal,'zoh');
 % [wYzodN,wYzodD] = wDiscretizer.mGetDiscreteTf('zoh');
@@ -62,19 +36,26 @@ B = Beta(1:size(
 % wYbox = wDiscretizer.mComputeRecursion(wInputSignal,'boxerThaler');
 % [wYboxN,wYboxD] = wDiscretizer.mGetDiscreteTf('boxerThaler');
 % 
-% %Parametrage simulation
-% model='zodModel';
-% load_system(model)
-% tic
-% 
-% wSaveFileName     = 'Ymodel';
-% 
-% set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
-% set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
-% 
-% set_param(strcat(model,'/ZOD'),'Numerator','wYzodN');
-% set_param(strcat(model,'/ZOD'),'Denominator','wYzodD');
-% set_param(strcat(model,'/ZOD'),'SampleTime','wSampleTime');
+%Parametrage simulation
+model='adamsFamillyModel';
+load_system(model)
+tic
+
+wSaveFileName     = 'Ymodel';
+ 
+set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
+set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
+
+set_param(strcat(model,'/Continuous'),...
+     'Numerator','wContinuousSystemNum');
+set_param(strcat(model,'/Continuous'),...
+     'Denominator','wContinuousSystemDen');
+
+set_param(strcat(model,'/State-Space'),'A','A');
+set_param(strcat(model,'/State-Space'),'B','B');
+set_param(strcat(model,'/State-Space'),'C','C');
+set_param(strcat(model,'/State-Space'),'D','D');
+
 % 
 % set_param(strcat(model,'/Tutsin'),'Numerator','wYtutN');
 % set_param(strcat(model,'/Tutsin'),'Denominator','wYtutD');
@@ -88,29 +69,38 @@ B = Beta(1:size(
 % set_param(strcat(model,'/Boxer Thalor'),'Denominator','wYboxD');
 % set_param(strcat(model,'/Boxer Thalor'),'SampleTime','wSampleTime');
 % 
-% set_param(strcat(model,'/Continuous'),...
-%     'Numerator','wContinuousSystemNum');
-% set_param(strcat(model,'/Continuous'),...
-%     'Denominator','wContinuousSystemDen');
-% 
-% set_param(model, 'StopTime', 'wSimulationTime');
-% 
-% set_param(model, 'MaxStep', 'wMaxStep');
-% 
-% myopts=simset('SrcWorkspace','current','DstWorkspace','current');
-% 
-% sim(model,wSimulationTime,myopts);
-% while (strcmp(get_param(model,'SimulationStatus'),'stopped')==0);
-% end
-% 
-% t_sim = toc;
-% fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
-% 
-% %Post traitement
-% load(wSaveFileName);
-% wStruct = eval('wSaveFileName');
-% 
-% %Plots
+
+set_param(model, 'StopTime', 'wSimulationTime');
+ 
+set_param(model, 'MaxStep', 'wMaxStep');
+ 
+myopts=simset('SrcWorkspace','current','DstWorkspace','current');
+ 
+sim(model,wSimulationTime,myopts);
+while (strcmp(get_param(model,'SimulationStatus'),'stopped')==0);
+end
+ 
+t_sim = toc;
+fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
+ 
+%Post traitement
+load(wSaveFileName);
+wStruct = eval('wSaveFileName');
+ 
+%Plots
+
+h_Cont=figure();
+hold all
+plot(Ymodel.Ys.Time,Ymodel...Data);
+plot(Ymodel.Yobs.Time,Ymodel.Yobs.Data);
+legend('Simulink Boxer-Thaler (plot)',...
+    'Simulink Boxer-Thaler (stairs)',...
+    'Recursive equation Boxer-Thaler','Continuous system');
+grid minor;
+xlabel('Time (s)');
+ylabel('Step Response');
+title('Open Loop Response to Boxer-Thaler discretized function transfer');
+
 % h_zod=figure();
 % hold all
 % plot(Ymodel.Yzod.Time,Ymodel.Yzod.Data);

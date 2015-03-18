@@ -36,19 +36,26 @@ wDiscretizer = Discretizer(wSampleTime,...
 % wYbox = wDiscretizer.mComputeRecursion(wInputSignal,'boxerThaler');
 % [wYboxN,wYboxD] = wDiscretizer.mGetDiscreteTf('boxerThaler');
 % 
-% %Parametrage simulation
-% model='zodModel';
-% load_system(model)
-% tic
-% 
-% wSaveFileName     = 'Ymodel';
-% 
-% set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
-% set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
-% 
-% set_param(strcat(model,'/ZOD'),'Numerator','wYzodN');
-% set_param(strcat(model,'/ZOD'),'Denominator','wYzodD');
-% set_param(strcat(model,'/ZOD'),'SampleTime','wSampleTime');
+%Parametrage simulation
+model='adamsFamillyModel';
+load_system(model)
+tic
+
+wSaveFileName     = 'Ymodel';
+ 
+set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
+set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
+
+set_param(strcat(model,'/Continuous'),...
+     'Numerator','wContinuousSystemNum');
+set_param(strcat(model,'/Continuous'),...
+     'Denominator','wContinuousSystemDen');
+
+set_param(strcat(model,'/State-Space'),'A','A');
+set_param(strcat(model,'/State-Space'),'B','B');
+set_param(strcat(model,'/State-Space'),'C','C');
+set_param(strcat(model,'/State-Space'),'D','D');
+
 % 
 % set_param(strcat(model,'/Tutsin'),'Numerator','wYtutN');
 % set_param(strcat(model,'/Tutsin'),'Denominator','wYtutD');
@@ -62,29 +69,37 @@ wDiscretizer = Discretizer(wSampleTime,...
 % set_param(strcat(model,'/Boxer Thalor'),'Denominator','wYboxD');
 % set_param(strcat(model,'/Boxer Thalor'),'SampleTime','wSampleTime');
 % 
-% set_param(strcat(model,'/Continuous'),...
-%     'Numerator','wContinuousSystemNum');
-% set_param(strcat(model,'/Continuous'),...
-%     'Denominator','wContinuousSystemDen');
-% 
-% set_param(model, 'StopTime', 'wSimulationTime');
-% 
-% set_param(model, 'MaxStep', 'wMaxStep');
-% 
-% myopts=simset('SrcWorkspace','current','DstWorkspace','current');
-% 
-% sim(model,wSimulationTime,myopts);
-% while (strcmp(get_param(model,'SimulationStatus'),'stopped')==0);
-% end
-% 
-% t_sim = toc;
-% fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
-% 
-% %Post traitement
-% load(wSaveFileName);
-% wStruct = eval('wSaveFileName');
-% 
-% %Plots
+
+set_param(model, 'StopTime', 'wSimulationTime');
+ 
+set_param(model, 'MaxStep', 'wMaxStep');
+ 
+myopts=simset('SrcWorkspace','current','DstWorkspace','current');
+ 
+sim(model,wSimulationTime,myopts);
+while (strcmp(get_param(model,'SimulationStatus'),'stopped')==0);
+end
+ 
+t_sim = toc;
+fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
+ 
+%Post traitement
+load(wSaveFileName);
+wStruct = eval('wSaveFileName');
+ 
+%Plots
+
+h_Cont=figure();
+hold all
+plot(Ymodel.Yobs.Time,Ymodel.Yobs.Data);
+plot(Ymodel.Ys.Time,Ymodel.Ys.Data);
+legend('Simulink Observable State Space',...
+       'Continuous system');
+grid minor;
+xlabel('Time (s)');
+ylabel('Step Response');
+title('Open Loop Response, continuous simulation');
+
 % h_zod=figure();
 % hold all
 % plot(Ymodel.Yzod.Time,Ymodel.Yzod.Data);
