@@ -114,6 +114,23 @@ classdef Discretizer < handle
             end
         end
         
+        %Compute discrete TF and apply retard
+        function [A,B,C,D] = mGetStateSpaceMatrix(iThis,iType)
+            
+            switch (iType)
+                case 'observable'
+                    
+                    [A,B,C,D] = iThis.mProcessObservableState();
+                    
+                otherwise
+                    h = errordlg('Invalid Type, returning null matrixes');
+                    waitfor(h)
+                    A = 0;
+                    B = 0;
+                    C = 0;
+                    D = 0;
+            end
+        end
         %Execute recursion equation with the specified input, on the
         %specified typed discrete function.
         function Y = mComputeRecursion(iThis,U,iType)
@@ -296,6 +313,47 @@ classdef Discretizer < handle
             oTf = wTf;
             
         end
+        
+        %Process state space
+        function [A,B,C,D] = mProcessObservableState(iThis)
+            
+            wOneBaseBias = 1;
+            
+            %Get transfert function polynomials and set them in a proper
+            %matlab order, opposed to polynomial order (aka [a(0),a(1),...,a(n-1),a(n)])
+            [wNum,wDen] = tfdata(iThis.mGetTf());
+            wDen = fliplr(wDen{1});
+            wNum = fliplr(wNum{1});
+            wOrder = length(wDen)-1;
+            
+            %Compute A matrix
+            A = diag(ones(1,wOrder-1),1);
+            for i=0:wOrder-1
+                A(wOrder,i+wOneBaseBias) = -wDen(i+wOneBaseBias)/wDen(length(wDen));
+            end
+            
+            %Compute beta values
+            wBetaMatrix = zeros(wOrder+1,1);
+            for k=wOrder:-1:0
+                s= 0;
+                for i=1:wOrder-k
+                    s = s + wDen(wOrder-i+wOneBaseBias)*wBetaMatrix(k+i+wOneBaseBias);
+                end
+                
+                wBetaMatrix(k+wOneBaseBias) = wNum(k+wOneBaseBias) - s;
+            end
+            
+            %Extract B & D matrixes from beta values. Note that beta matrix
+            %is ordered in matlab order (aka: [b(0);b(1);...b(n-1);b(n)])
+            %B needs to be inverted to be in the following order:
+            %[b(n-1),b(n-2),...b(0)]
+            B = wBetaMatrix(length(wBetaMatrix)-1:-1:1);
+            D = wBetaMatrix(length(wBetaMatrix));
+            
+            %Compute C matrix.
+            C = [1,zeros(1,wOrder-1)];
+        end
+        
     end %Private methods
     
 end %Class

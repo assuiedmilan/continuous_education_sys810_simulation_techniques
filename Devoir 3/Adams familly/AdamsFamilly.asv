@@ -18,8 +18,34 @@ wDiscretizer = Discretizer(wSampleTime,...
     wContinuousSystemNum,...
     wContinuousSystemDen);
 
-[A,B,C,D] = wDiscretizer.mGetStateSpaceMatrix('observable');
+wOneBaseBias = 1;
 
+[n,d] = tfdata(wDiscretizer.mGetTf())
+d = fliplr(d{1})
+n = fliplr(n{1})
+o = length(d)-1;
+
+A = diag(ones(1,o-1),1)
+for i=0:o-1
+    A(o,o-i) = -d(o+1-i)
+end
+
+Beta = zeros(o+1,1)
+
+for k=o:-1:0
+    s= 0    
+    for i=1:o-k
+        s = s + d(o-i+wOneBaseBias)*Beta(k+i+wOneBaseBias)
+    end
+    
+    Beta(k+wOneBaseBias) = n(k+wOneBaseBias) - s;
+end
+
+wBetaN = Beta(0);
+B = Beta(1:size(
+
+    
+    
 % % Getting recursive equation and Tf for Zero Order Hold:
 % wYzod = wDiscretizer.mComputeRecursion(wInputSignal,'zoh');
 % [wYzodN,wYzodD] = wDiscretizer.mGetDiscreteTf('zoh');
