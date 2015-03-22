@@ -5,7 +5,7 @@ close all;
 clear all; %#ok<CLSCR>
 clc;
 
-wSampleTime=0.1;
+wSampleTime=0.01;
 wSimulationTime=10;
 wMaxStep=wSampleTime/1000;
 
@@ -22,55 +22,42 @@ wPloter = Ploter([0 0 8 5],[8 5]);
 
 [A,B,C,D] = wDiscretizer.mGetStateSpaceMatrix('observable');
 
-% % Getting recursive equation and Tf for Zero Order Hold:
-% wYzod = wDiscretizer.mComputeRecursion(wInputSignal,'zoh');
-% [wYzodN,wYzodD] = wDiscretizer.mGetDiscreteTf('zoh');
-% 
-% % Getting recursive equation and Tf for Tutsin:
-% wYtut = wDiscretizer.mComputeRecursion(wInputSignal,'tutsin');
-% [wYtutN,wYtutD] = wDiscretizer.mGetDiscreteTf('tutsin');
-% 
-% % Getting recursive equation and Tf for Halijak:
-% wYhal = wDiscretizer.mComputeRecursion(wInputSignal,'halijak');
-% [wYhalN,wYhalD] = wDiscretizer.mGetDiscreteTf('halijak');
-% 
-% % Getting recursive equation and Tf for Boxer Thaler:
-% wYbox = wDiscretizer.mComputeRecursion(wInputSignal,'boxerThaler');
-% [wYboxN,wYboxD] = wDiscretizer.mGetDiscreteTf('boxerThaler');
-% 
 %Parametrage simulation
 model='adamsFamillyModel';
 load_system(model)
 tic
 
-wSaveFileName     = 'Ymodel';
+wSaveFileName     = 'Y';
  
 set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
 set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
 
-set_param(strcat(model,'/Continuous'),...
-     'Numerator','wContinuousSystemNum');
-set_param(strcat(model,'/Continuous'),...
-     'Denominator','wContinuousSystemDen');
+%Parametrage simulation continue
+set_param(strcat(model,'/Continuous'),'Numerator','wContinuousSystemNum');
+set_param(strcat(model,'/Continuous'),'Denominator','wContinuousSystemDen');
 
-set_param(strcat(model,'/State-Space'),'A','A');
-set_param(strcat(model,'/State-Space'),'B','B');
-set_param(strcat(model,'/State-Space'),'C','C');
-set_param(strcat(model,'/State-Space'),'D','D');
+set_param(strcat(model,'/Observable continuous model'),'a0','A(size(A,1),1)');
+set_param(strcat(model,'/Observable continuous model'),'a1','A(size(A,1),2)');
+set_param(strcat(model,'/Observable continuous model'),'a2','A(size(A,1),3)');
 
-% 
-% set_param(strcat(model,'/Tutsin'),'Numerator','wYtutN');
-% set_param(strcat(model,'/Tutsin'),'Denominator','wYtutD');
-% set_param(strcat(model,'/Tutsin'),'SampleTime','wSampleTime');
-% 
-% set_param(strcat(model,'/Halikaj'),'Numerator','wYhalN');
-% set_param(strcat(model,'/Halikaj'),'Denominator','wYhalD');
-% set_param(strcat(model,'/Halikaj'),'SampleTime','wSampleTime');
-% 
-% set_param(strcat(model,'/Boxer Thalor'),'Numerator','wYboxN');
-% set_param(strcat(model,'/Boxer Thalor'),'Denominator','wYboxD');
-% set_param(strcat(model,'/Boxer Thalor'),'SampleTime','wSampleTime');
-% 
+set_param(strcat(model,'/Observable continuous model'),'b0','B(3,1)');
+set_param(strcat(model,'/Observable continuous model'),'b1','B(2,1)');
+set_param(strcat(model,'/Observable continuous model'),'b2','B(1,1)');
+
+set_param(strcat(model,'/Observable continuous model'),'b3','D(1,1)');
+
+%Parametrage AB_2
+set_param(strcat(model,'/AB_2'),'a0','A(size(A,1),1)');
+set_param(strcat(model,'/AB_2'),'a1','A(size(A,1),2)');
+set_param(strcat(model,'/AB_2'),'a2','A(size(A,1),3)');
+
+set_param(strcat(model,'/AB_2'),'b0','B(3,1)');
+set_param(strcat(model,'/AB_2'),'b1','B(2,1)');
+set_param(strcat(model,'/AB_2'),'b2','B(1,1)');
+
+set_param(strcat(model,'/AB_2'),'b3','D(1,1)');
+
+set_param(strcat(model,'/AB_2'),'T','wSampleTime');
 
 set_param(model, 'StopTime', 'wSimulationTime');
  
@@ -91,127 +78,8 @@ wStruct = eval('wSaveFileName');
  
 %Plots
 
-wPloter.mDrawStandardPlot([Ymodel.Continuous_signal,Ymodel.State_space_block],'Time (s)','Step Response','Open Loop Response, continuous simulation');
+wPloter.mDrawStandardPlot([Y.Continuous_signal,Y.State_space_block,Y.Observable_continuous],...
+'Time (s)','Step Response','Open Loop Response, continuous simulation');
 
-% h_zod=figure();
-% hold all
-% plot(Ymodel.Yzod.Time,Ymodel.Yzod.Data);
-% stairs(Ymodel.Yzod.Time,Ymodel.Yzod.Data);
-% stairs(0:wSampleTime:(size(wInputSignal,2)-1)*wSampleTime,wYzod);
-% legend('Simulink ZOH (plot)',...
-%     'Simulink ZOH (stairs)',...
-%     'Recursive equation ZOH');
-% grid minor;
-% xlabel('Time (s)');
-% ylabel('Step Response');
-% title('Open Loop Response to ZOH discretized function transfer');
-% 
-% h_tut=figure();
-% hold all
-% plot(Ymodel.Ytut.Time,Ymodel.Ytut.Data);
-% stairs(Ymodel.Ytut.Time,Ymodel.Ytut.Data);
-% stairs(0:wSampleTime:(size(wInputSignal,2)-1)*wSampleTime,wYtut);
-% plot(Ymodel.Ys.Time,Ymodel.Ys.Data);
-% legend('Simulink Tutsin (plot)',...
-%     'Simulink Tutsin (stairs)',...
-%     'Recursive equation Tutsin',...
-%     'Continuous system');
-% grid minor;
-% xlabel('Time (s)');
-% ylabel('Step Response');
-% title('Open Loop Response to Tutsin discretized function transfer');
-% 
-% h_hal=figure();
-% hold all
-% plot(Ymodel.Yhal.Time,Ymodel.Yhal.Data);
-% stairs(Ymodel.Yhal.Time,Ymodel.Yhal.Data);
-% stairs(0:wSampleTime:(size(wInputSignal,2)-1)*wSampleTime,wYhal);
-% plot(Ymodel.Ys.Time,Ymodel.Ys.Data);
-% legend('Simulink Halijak (plot)',...
-%     'Simulink Halijak (stairs)',...
-%     'Recursive equation Halijak','Continuous system');
-% grid minor;
-% xlabel('Time (s)');
-% ylabel('Step Response');
-% title('Open Loop Response to Halijak discretized function transfer');
-% 
-% h_box=figure();
-% hold all
-% plot(Ymodel.Ybox.Time,Ymodel.Ybox.Data);
-% stairs(Ymodel.Ybox.Time,Ymodel.Ybox.Data);
-% stairs(0:wSampleTime:(size(wInputSignal,2)-1)*wSampleTime,wYbox);
-% plot(Ymodel.Ys.Time,Ymodel.Ys.Data);
-% legend('Simulink Boxer-Thaler (plot)',...
-%     'Simulink Boxer-Thaler (stairs)',...
-%     'Recursive equation Boxer-Thaler','Continuous system');
-% grid minor;
-% xlabel('Time (s)');
-% ylabel('Step Response');
-% title('Open Loop Response to Boxer-Thaler discretized function transfer');
-% 
-% %Poles - zeros
-% h_spz = figure();
-% pzmap(wDiscretizer.mGetTf());
-% legend('Continuous system');
-% sgrid;
-% grid minor;
-% 
-% h_zpz  = figure();
-% pzmap(wDiscretizer.mGetDiscreteTf('zoh'),...
-%     wDiscretizer.mGetDiscreteTf('tutsin'),...
-%     wDiscretizer.mGetDiscreteTf('halijak'),...
-%     wDiscretizer.mGetDiscreteTf('boxerThaler'));
-% legend('Zero order hold','Tutsin','Halijak','Boxer-Thaler');
-% zgrid;
-% grid minor;
-% 
-% h_snyq = figure();
-% nyquist(wDiscretizer.mGetTf());
-% legend('Continuous system');
-% grid minor;
-% 
-
-%Saving figures
-
-% 
-% set(h_tut, 'PaperPosition', wPaperPos); 
-% set(h_tut, 'PaperSize', wPaperSize); 
-% saveas(h_tut, 'ZTransform Tutsin', 'pdf') 
-% 
-% set(h_hal, 'PaperPosition', wPaperPos); 
-% set(h_hal, 'PaperSize', wPaperSize); 
-% saveas(h_hal, 'ZTransform Halijak', 'pdf') 
-% 
-% set(h_box, 'PaperPosition', wPaperPos); 
-% set(h_box, 'PaperSize', wPaperSize); 
-% saveas(h_box, 'ZTransform Boxer-Thalor', 'pdf') 
-% 
-% set(h_spz, 'PaperPosition', wPaperPos); 
-% set(h_spz, 'PaperSize', wPaperSize); 
-% saveas(h_spz, 'ZTransform Poles-Zeros', 'pdf') 
-% 
-% set(h_zpz, 'PaperPosition', wPaperPos); 
-% set(h_zpz, 'PaperSize', wPaperSize); 
-% saveas(h_zpz, 'ZTransform Poles-Zeros discretes', 'pdf') 
-% 
-% set(h_snyq, 'PaperPosition', wPaperPos); 
-% set(h_snyq, 'PaperSize', wPaperSize); 
-% saveas(h_snyq, 'ZTransform Nyquist', 'pdf') 
-% 
-% %Saving model
-% saveas(get_param(model,'Handle'),'ZTransform-Model.pdf');
-% close_system(model,false)
-% 
-% %Print the transfer functions on command windows for saving:
-% clc;
-% disp('Continuous transfer function')
-% wDiscretizer.mGetTf
-% 
-% disp('Tutsin discretization')
-% wDiscretizer.mGetDiscreteTf('tutsin')
-% 
-% disp('Boxer-Thalor discretization')
-% wDiscretizer.mGetDiscreteTf('boxerThaler')
-% 
-% disp('Halijak discretization')
-% wDiscretizer.mGetDiscreteTf('halijak')
+wPloter.mDrawStandardPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
+'Time (s)','Step Response','Open Loop Response, continuous simulation');
