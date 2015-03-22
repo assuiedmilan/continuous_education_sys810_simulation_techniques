@@ -5,7 +5,7 @@ close all;
 clear all; %#ok<CLSCR>
 clc;
 
-wSampleTime=0.01;
+wSampleTime=0.1;
 wSimulationTime=10;
 wMaxStep=wSampleTime/1000;
 
@@ -78,8 +78,10 @@ wStruct = eval('wSaveFileName');
  
 %Plots
 
-wPloter.mDrawStandardPlot([Y.Continuous_signal,Y.State_space_block,Y.Observable_continuous],...
-'Time (s)','Step Response','Open Loop Response, continuous simulation');
+wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.State_space_block,Y.Observable_continuous],...
+'Open Loop Response, continuous simulation','Time (s)','Step Response');
 
-wPloter.mDrawStandardPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
-'Time (s)','Step Response','Open Loop Response, continuous simulation');
+wPloter.mDrawTimeseriesPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
+'Open Loop Response, Adams Branshforth','Time (s)','Step Response','stairs');
+
+wPloter.mDrawStandardPlot({wContinuousSystemNum,wContinuousSystemDen},'nyquist');

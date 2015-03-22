@@ -23,26 +23,24 @@ classdef Ploter < handle
         end
         
         %Public methods
-        function oHandle = mDrawStandardPlot(iThis,iTimeSeries,iXLabel,iYLabel,iTitle)
+        function oHandle = mDrawTimeseriesPlot(iThis,iValues,iTitle,iXlabel,iYlabel,varargin)
             
-            oHandle=figure();
-            oHandle.Name = iTitle;
-            
-            for i=1:length(iTimeSeries)
+            if(isempty(varargin))
                 
-                iThis.mSetHold();
+                oHandle = iThis.mProcessTimeseriesPlot(@plot,iValues,iTitle,iXlabel,iYlabel);
                 
-                plot(iTimeSeries(i).Time,iTimeSeries(i).Data);
-                wLegend = legend(get(legend(gca),'String'),iTimeSeries(i).Name);
+            else
+                
+                oHandle = iThis.mProcessTimeseriesPlot(str2func(varargin{1}),iValues,iTitle,iXlabel,iYlabel);
                 
             end
             
-            set(wLegend, 'Interpreter', 'none');
-            xlabel(iXLabel);
-            ylabel(iYLabel);
-            title(iTitle);
-            grid minor;
-            iThis.mSaveDraw(oHandle);
+        end
+        
+        function oHandle = mDrawStandardPlot(iThis,iValues,iPlot,varargin)           
+               
+                oHandle = iThis.mProcessStandardPlot(str2func(iPlot),iValues,varargin{:});
+                
         end
         
         %Accessors
@@ -81,6 +79,68 @@ classdef Ploter < handle
             set(iHandle, 'PaperSize', iThis.mPaperSize);
             saveas(iHandle, iHandle.Name, 'pdf');
             
+        end
+        
+        function oHandle = mProcessTimeseriesPlot(iThis,iFuncHandle,iValues,iTitle,iXlabel,iYlabel)
+            
+            oHandle=figure();
+            
+            for i=1:length(iValues)
+                
+                iThis.mSetHold();
+                
+                iFuncHandle(iValues(i).Time,iValues(i).Data);
+                wLegend = legend(get(legend(gca),'String'),iValues(i).Name);
+                
+            end
+            
+            set(wLegend, 'Interpreter', 'none');
+            
+            iThis.mProcessLabels(oHandle,iTitle,iXlabel,iYlabel);
+            grid minor;
+            iThis.mSaveDraw(oHandle);
+        end
+        
+        function oHandle = mProcessStandardPlot(iThis,iFuncHandle,iValues,varargin)
+            
+            oHandle=figure();
+            oHandle.Name = func2str(iFuncHandle);
+            
+            for i=1:2:length(iValues)
+                
+                iThis.mSetHold();
+                
+                if (i<length(iValues))
+                    
+                    iFuncHandle(iValues{i},iValues{i+1});
+                else
+                    iFuncHandle(iValues{i});
+                end
+                
+            end
+            
+            iThis.mProcessLabels(oHandle,varargin{:});
+            
+            grid minor;
+            iThis.mSaveDraw(oHandle);
+        end
+        
+        function mProcessLabels(iThis,iHandle,varargin) %#ok<INUSL>
+            
+            set(0,'currentfigure',iHandle);
+            
+            if (length(varargin) == 1)
+                title(varargin{1});
+                iHandle.Name = varargin{1};
+            elseif (length(varargin) == 2)
+                xlabel(varargin{1});
+                ylabel(varargin{2});
+            elseif (length(varargin) == 3)
+                title(varargin{1});
+                iHandle.Name = varargin{1};
+                xlabel(varargin{2});
+                ylabel(varargin{3});
+            end
         end
         
     end %Private methods
