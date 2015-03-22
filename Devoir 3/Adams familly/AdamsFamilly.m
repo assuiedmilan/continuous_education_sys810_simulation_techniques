@@ -18,6 +18,8 @@ wDiscretizer = Discretizer(wSampleTime,...
     wContinuousSystemNum,...
     wContinuousSystemDen);
 
+wPloter = Ploter([0 0 8 5],[8 5]);
+
 [A,B,C,D] = wDiscretizer.mGetStateSpaceMatrix('observable');
 
 % % Getting recursive equation and Tf for Zero Order Hold:
@@ -89,16 +91,7 @@ wStruct = eval('wSaveFileName');
  
 %Plots
 
-h_Cont=figure();
-hold all
-plot(Ymodel.Yobs.Time,Ymodel.Yobs.Data);
-plot(Ymodel.Ys.Time,Ymodel.Ys.Data);
-legend('Simulink Observable State Space',...
-       'Continuous system');
-grid minor;
-xlabel('Time (s)');
-ylabel('Step Response');
-title('Open Loop Response, continuous simulation');
+wPloter.mDrawStandardPlot([Ymodel.Continuous_signal,Ymodel.State_space_block],'Time (s)','Step Response','Open Loop Response, continuous simulation');
 
 % h_zod=figure();
 % hold all
@@ -179,12 +172,7 @@ title('Open Loop Response, continuous simulation');
 % 
 
 %Saving figures
-wPaperPos = [0 0 8 5];
-wPaperSize = [8 5];
- 
-set(h_Cont, 'PaperPosition', wPaperPos); 
-set(h_Cont, 'PaperSize', wPaperSize);
-saveas(h_Cont, 'Continuous simulation', 'pdf')
+
 % 
 % set(h_tut, 'PaperPosition', wPaperPos); 
 % set(h_tut, 'PaperSize', wPaperSize); 

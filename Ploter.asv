@@ -1,0 +1,92 @@
+classdef Ploter < handle
+    
+    properties (SetAccess = private, GetAccess = private)
+        
+        mPaperPos;
+        mPaperSize
+        mHoldAll;
+        mSaveAfterDraw;
+        
+    end
+    
+    methods %Public
+        
+        %Constructors
+        function oInstance = Ploter(iPaperPos, iPaperSize, varargin)
+            
+            oInstance.mPaperPos = iPaperPos;
+            oInstance.mPaperSize = iPaperSize;
+            
+            oInstance.mHoldAll = true;
+            oInstance.mSaveAfterDraw = true;
+            
+        end
+        
+        %Public methods
+        function oHandle = mDrawStandardPlot(iThis,iTimeSeries,iXLabel,iYLabel,iTitle)
+            
+            oHandle=figure();
+            
+            iThis.mSetHold();
+            
+            for i=1:length(iTimeData)
+                
+                plot(iTimeSeries(i).Time,iTimeSeries(i).Data);
+                legend(iTimeSeries(i).Name);
+                grid minor;
+                xlabel(iXLabel);
+                ylabel(iYLabel);
+                title(iTitle);
+            end
+        end
+
+        function oHandle = mSavePlot(iThis,iHandle)
+            
+            oHandle=figure();
+            
+            iThis.mSetHold();
+            
+            for i=1:length(iTimeData)
+                
+                plot(iTimeSeries(i).Time,iTimeSeries(i).Data);
+                legend(iTimeSeries(i).Name);
+                grid minor;
+                xlabel(iXLabel);
+                ylabel(iYLabel);
+                title(iTitle);
+            end
+        end
+        
+        %Accessors
+        
+        function mSetPaperPos(iThis,iPaperPos)
+            iThis.mPaperPos = iPaperPos;
+        end
+        
+        function mSetPaperSize(iThis,iPaperSize)
+            iThis.mPaperSize = iPaperSize;
+        end
+        
+    end %Public methods
+    
+    methods (Access = private)
+        
+        function mSetHold(iThis)
+            
+            if (iThis.mHoldAll)
+                hold all;
+            end
+            
+        end
+        
+                function mSaveDraw(iThis,iHandle)
+            
+            if (iThis.mSaveAfterDraw)
+                hold all;
+            end
+            
+                end
+        
+    end %Private methods
+end %Class
+
