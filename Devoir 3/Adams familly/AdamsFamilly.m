@@ -84,4 +84,4 @@ wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.State_space_block,Y.Observabl
 wPloter.mDrawTimeseriesPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
 'Open Loop Response, Adams Branshforth','Time (s)','Step Response','stairs');
 
-wPloter.mDrawStandardPlot({wContinuousSystemNum,wContinuousSystemDen},'nyquist');
+wPloter.mDrawStabilityRegion('Adam-Brashforth second order',[3,-1],[2,-2,0]);

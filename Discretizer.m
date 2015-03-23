@@ -63,8 +63,8 @@ classdef Discretizer < handle
                 varargout{1} = wDiscreteTf;
             elseif nargout == 2
                 [wHnum,wHden] = tfdata(wDiscreteTf,'v');
-                varargout{1} = wHnum;
-                varargout{2} = wHden;
+                varargout{1} = wHnum./wHden(1);
+                varargout{2} = wHden./wHden(1);
             else
                 h = errordlg('Invalid number of output arguments, valids outputs are (Tf) or (NumTf,DenTf)');
                 waitfor(h)

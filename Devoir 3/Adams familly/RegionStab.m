@@ -3,7 +3,7 @@ close all
 
 z=tf('z')
 wt=0:.01:2*pi;
-k=[0.95 1];
+k=[1];
 
 z=(k'*exp(i*wt))';
 

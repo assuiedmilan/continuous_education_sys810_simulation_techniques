@@ -43,6 +43,25 @@ classdef Ploter < handle
                 
         end
         
+        function oHandle = mDrawStabilityRegion(iThis,iTitle,varargin)
+               
+            wDiscretizer = Discretizer(1,varargin{:});            
+
+            wZ = (exp(1i*(0:.01:2*pi)))';
+            
+            [wTau,wL] = wDiscretizer.mGetDiscreteTf('continuous');
+            
+            for k = 1:length(wZ)
+                    
+                    wStabilityValues(k) = polyval(wL,wZ(k)) ./ polyval(wTau,wZ(k)); %#ok<AGROW>
+                    
+            end
+            
+             oHandle = mDrawStandardPlot(iThis,{real(wStabilityValues),imag(wStabilityValues)},'plot',strcat(iTitle,' stability region'),'Real axis','Imaginary axis');
+            
+        end
+        
+        
         %Accessors
         
         function mSetPaperPos(iThis,iPaperPos)
