@@ -14,13 +14,20 @@ wInputSignal=ones(1,wSimulationTime/wSampleTime);
 wContinuousSystemNum = [100,0];
 wContinuousSystemDen = [1,11,30,200];
 
-wDiscretizer = Discretizer(wSampleTime,...
+wAdamsBashforthNum = [3,-1];
+wAdamsBashforthDen = [2,-2,0];
+
+wSystem = Discretizer(wSampleTime,...
     wContinuousSystemNum,...
     wContinuousSystemDen);
 
+wAdamsBashforth = Discretizer(wSampleTime,...
+    wAdamsBashforthNum,...
+    wAdamsBashforthDen);
+
 wPloter = Ploter([0 0 8 5],[8 5]);
 
-[A,B,C,D] = wDiscretizer.mGetStateSpaceMatrix('observable');
+[A,B,C,D] = wSystem.mGetStateSpaceMatrix('observable');
 
 %Parametrage simulation
 model='adamsFamillyModel';
@@ -59,6 +66,9 @@ set_param(strcat(model,'/AB_2'),'b3','D(1,1)');
 
 set_param(strcat(model,'/AB_2'),'T','wSampleTime');
 
+set_param(strcat(model,'/AB_2'),'HzNum','wAdamsBashforthNum');
+set_param(strcat(model,'/AB_2'),'HzDen','wAdamsBashforthDen');
+
 set_param(model, 'StopTime', 'wSimulationTime');
  
 set_param(model, 'MaxStep', 'wMaxStep');
@@ -84,4 +94,4 @@ wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.State_space_block,Y.Observabl
 wPloter.mDrawTimeseriesPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
 'Open Loop Response, Adams Branshforth','Time (s)','Step Response','stairs');
 
-wPloter.mDrawStabilityRegion('Adam-Brashforth second order',[3,-1],[2,-2,0]);
+wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
