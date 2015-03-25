@@ -5,7 +5,7 @@ close all;
 clear all; %#ok<CLSCR>
 clc;
 
-wSampleTime=0.1;
+wSampleTime=0.05;
 wSimulationTime=10;
 wMaxStep=wSampleTime/1000;
 
@@ -27,28 +27,29 @@ wPloter = Ploter([0 0 8 5],[8 5]);
 %Stability study
 wABStabilityHandle = wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
 wLambda = pole(wSystem.mGetTf);
-wSampleTime=0.01:0.01:0.1;
+wSampleTimeList=0.01:0.01:0.1;
 
 set(0,'currentfigure',wABStabilityHandle);
-for k=1:length(wSampleTime)
+for k=1:length(wSampleTimeList)
     
     wReal = [];
     wImag = [];
     
     for h=1:length(wLambda)
         
-        wReal = [wReal,wSampleTime(k)*real(wLambda(h))];
-        wImag = [wImag,wSampleTime(k)*imag(wLambda(h))];
+        wReal = [wReal,wSampleTimeList(k)*real(wLambda(h))];
+        wImag = [wImag,wSampleTimeList(k)*imag(wLambda(h))];
     end
     
     hold all;
     scatter(wReal,wImag);
-    legend(get(legend(gca),'String'),num2str(wSampleTime(k)));
+    legend(get(legend(gca),'String'),num2str(wSampleTimeList(k)));
     
 end
 
 
-[A,B,C,D] = wSystem.mGetStateSpaceMatrix('observable');
+[Ao,Bo,Co,Do] = wSystem.mGetStateSpaceMatrix('observable');
+[Ac,Bc,Cc,Dc] = wSystem.mGetStateSpaceMatrix('commandable');
 
 %Parametrage simulation
 model='adamsFamillyModel';
@@ -64,26 +65,34 @@ set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
 set_param(strcat(model,'/Continuous'),'Numerator','wContinuousSystemNum');
 set_param(strcat(model,'/Continuous'),'Denominator','wContinuousSystemDen');
 
-set_param(strcat(model,'/Observable continuous model'),'a0','A(size(A,1),1)');
-set_param(strcat(model,'/Observable continuous model'),'a1','A(size(A,1),2)');
-set_param(strcat(model,'/Observable continuous model'),'a2','A(size(A,1),3)');
+set_param(strcat(model,'/Observable continuous model'),'a0','Ao(size(Ao,1),1)');
+set_param(strcat(model,'/Observable continuous model'),'a1','Ao(size(Ao,1),2)');
+set_param(strcat(model,'/Observable continuous model'),'a2','Ao(size(Ao,1),3)');
 
-set_param(strcat(model,'/Observable continuous model'),'b0','B(3,1)');
-set_param(strcat(model,'/Observable continuous model'),'b1','B(2,1)');
-set_param(strcat(model,'/Observable continuous model'),'b2','B(1,1)');
+set_param(strcat(model,'/Observable continuous model'),'b0','Bo(3,1)');
+set_param(strcat(model,'/Observable continuous model'),'b1','Bo(2,1)');
+set_param(strcat(model,'/Observable continuous model'),'b2','Bo(1,1)');
 
-set_param(strcat(model,'/Observable continuous model'),'b3','D(1,1)');
+set_param(strcat(model,'/Observable continuous model'),'b3','Do(1,1)');
+
+set_param(strcat(model,'/Commandable continuous model'),'a0','Ac(size(Ac,1),1)');
+set_param(strcat(model,'/Commandable continuous model'),'a1','Ac(size(Ac,1),2)');
+set_param(strcat(model,'/Commandable continuous model'),'a2','Ac(size(Ac,1),3)');
+
+set_param(strcat(model,'/Commandable continuous model'),'b0','Cc(1,1)');
+set_param(strcat(model,'/Commandable continuous model'),'b1','Cc(1,2)');
+set_param(strcat(model,'/Commandable continuous model'),'b2','Cc(1,3)');
 
 %Parametrage AB_2
-set_param(strcat(model,'/AB_2'),'a0','A(size(A,1),1)');
-set_param(strcat(model,'/AB_2'),'a1','A(size(A,1),2)');
-set_param(strcat(model,'/AB_2'),'a2','A(size(A,1),3)');
+set_param(strcat(model,'/AB_2'),'a0','Ao(size(Ao,1),1)');
+set_param(strcat(model,'/AB_2'),'a1','Ao(size(Ao,1),2)');
+set_param(strcat(model,'/AB_2'),'a2','Ao(size(Ao,1),3)');
 
-set_param(strcat(model,'/AB_2'),'b0','B(3,1)');
-set_param(strcat(model,'/AB_2'),'b1','B(2,1)');
-set_param(strcat(model,'/AB_2'),'b2','B(1,1)');
+set_param(strcat(model,'/AB_2'),'b0','Bo(3,1)');
+set_param(strcat(model,'/AB_2'),'b1','Bo(2,1)');
+set_param(strcat(model,'/AB_2'),'b2','Bo(1,1)');
 
-set_param(strcat(model,'/AB_2'),'b3','D(1,1)');
+set_param(strcat(model,'/AB_2'),'b3','Do(1,1)');
 
 set_param(strcat(model,'/AB_2'),'T','wSampleTime');
 
@@ -109,7 +118,7 @@ wStruct = eval('wSaveFileName');
 
 %Plots
 
-wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.State_space_block,Y.Observable_continuous],...
+wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.Commandable_continuous,Y.Observable_continuous],...
     'Open Loop Response, continuous simulation','Time (s)','Step Response');
 
 wPloter.mDrawTimeseriesPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
