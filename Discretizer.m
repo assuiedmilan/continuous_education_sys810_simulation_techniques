@@ -122,6 +122,10 @@ classdef Discretizer < handle
                     
                     [A,B,C,D] = iThis.mProcessObservableState();
                     
+                case 'commandable'
+                    
+                    [A,B,C,D] = iThis.mProcessCommandableState();
+                    
                 otherwise
                     h = errordlg('Invalid Type, returning null matrixes');
                     waitfor(h)
@@ -352,19 +356,17 @@ classdef Discretizer < handle
             [wNum,wDen,wOrder] = iThis.mGetMatlabOrderedCoefficients(); %#ok<ASGLU>
             
             A = iThis.mProcessCannonicalAMatrix();
-                        
+            
             %Compute C values
-            B = zeros(1,wOrder);
+            C = zeros(1,wOrder);
             for i=0:wOrder-1
-                B(1,i+wOneBaseBias) = wNum(i+wOneBaseBias);
+                C(1,i+wOneBaseBias) = wNum(i+wOneBaseBias);
             end
             
             %Compute B and D
             B = [zeros(1,wOrder-1),1]';
             D = 0;
-            
-            %Compute C matrix.
-            C = [1,zeros(1,wOrder-1)];
+
         end
         
         function [A] = mProcessCannonicalAMatrix(iThis)
