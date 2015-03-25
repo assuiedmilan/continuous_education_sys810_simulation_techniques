@@ -25,27 +25,27 @@ wSystem = Discretizer(wSampleTime,...
 wPloter = Ploter([0 0 8 5],[8 5]);
 
 %Stability study
-wABStabilityHandle = wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
-wLambda = pole(wSystem.mGetTf);
-wSampleTimeList=0.01:0.01:0.1;
-
-set(0,'currentfigure',wABStabilityHandle);
-for k=1:length(wSampleTimeList)
-    
-    wReal = [];
-    wImag = [];
-    
-    for h=1:length(wLambda)
-        
-        wReal = [wReal,wSampleTimeList(k)*real(wLambda(h))];
-        wImag = [wImag,wSampleTimeList(k)*imag(wLambda(h))];
-    end
-    
-    hold all;
-    scatter(wReal,wImag);
-    legend(get(legend(gca),'String'),num2str(wSampleTimeList(k)));
-    
-end
+% wABStabilityHandle = wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
+% wLambda = pole(wSystem.mGetTf);
+% wSampleTimeList=0.01:0.01:0.1;
+% 
+% set(0,'currentfigure',wABStabilityHandle);
+% for k=1:length(wSampleTimeList)
+%     
+%     wReal = [];
+%     wImag = [];
+%     
+%     for h=1:length(wLambda)
+%         
+%         wReal = [wReal,wSampleTimeList(k)*real(wLambda(h))];
+%         wImag = [wImag,wSampleTimeList(k)*imag(wLambda(h))];
+%     end
+%     
+%     hold all;
+%     scatter(wReal,wImag);
+%     legend(get(legend(gca),'String'),num2str(wSampleTimeList(k)));
+%     
+% end
 
 
 [Ao,Bo,Co,Do] = wSystem.mGetStateSpaceMatrix('observable');
@@ -124,4 +124,43 @@ wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.Commandable_continuous,Y.Obse
 wPloter.mDrawTimeseriesPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
     'Open Loop Response, Adams Branshforth','Time (s)','Step Response','stairs');
 
+
+%Computing system using Predictor-Corrector
+
+%Abscices
+wSampleTime = 0.005;
+t=linspace(0,wSimulationTime,wSimulationTime*(1/wSampleTime));
+
+%Conditins initiaux
+f1c(1) = 0;   f2c(1) = 0; f3c(1) = 1;
+x1c(1) = 0;   x2c(1) = 0; x3c(1) = 0;
+
+for n = 0:wSimulationTime/wSampleTime-2
+    
+    if (n == 0)        
+        x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1));
+        x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(f2c(n+1));
+        x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(f3c(n+1));
+    else        
+        x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1)-f1c(n));
+        x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(f2c(n+1)-f2c(n));
+        x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(f3c(n+1)-f3c(n));
+    end
+    
+    f1p(n+2) = x2p(n+2);
+    f2p(n+2) = x3p(n+2);
+    f3p(n+2) = -200*x1p(n+2) - 30*x2p(n+2) -11*x3p(n+2) + 1;
+    
+    x1c(n+2) = x1c(n+1) + (wSampleTime/2)*(f1p(n+2)+ f1c(n+1));
+    x2c(n+2) = x2c(n+1) + (wSampleTime/2)*(f2p(n+2)+ f2c(n+1));
+    x3c(n+2) = x3c(n+1) + (wSampleTime/2)*(f3p(n+2)+ f3c(n+1));
+    
+    f1c(n+2) = x2c(n+2);
+    f2c(n+2) = x3c(n+2);
+    f3c(n+2) = -200*x1c(n+2) - 30*x2c(n+2) -11*x3c(n+2) + 1;
+    
+end
+
+wPloter.mDrawStandardPlot({Y.Observable_continuous.Time,Y.Observable_continuous.Data,t,100*x2c},...
+    'stairs','Open Loop Response, Prediction-Correction vs Continuous simulation','Time (s)','Step Response',{'Commandable continuous';'Prediction-Correction'});
 

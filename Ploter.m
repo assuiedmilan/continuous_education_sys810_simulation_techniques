@@ -140,6 +140,10 @@ classdef Ploter < handle
             
             iThis.mProcessLabels(oHandle,varargin{:});
             
+            if(length(varargin) > 3)
+                legend(varargin{4});
+            end
+            
             grid minor;
             iThis.mSaveDraw(oHandle);
         end
