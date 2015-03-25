@@ -17,15 +17,36 @@ wContinuousSystemDen = [1,11,30,200];
 wAdamsBashforthNum = [3,-1];
 wAdamsBashforthDen = [2,-2,0];
 
+%Objects initialization
 wSystem = Discretizer(wSampleTime,...
     wContinuousSystemNum,...
     wContinuousSystemDen);
 
-wAdamsBashforth = Discretizer(wSampleTime,...
-    wAdamsBashforthNum,...
-    wAdamsBashforthDen);
-
 wPloter = Ploter([0 0 8 5],[8 5]);
+
+%Stability study
+wABStabilityHandle = wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
+wLambda = pole(wSystem.mGetTf);
+wSampleTime=0.01:0.01:0.1;
+
+set(0,'currentfigure',wABStabilityHandle);
+for k=1:length(wSampleTime)
+    
+    wReal = [];
+    wImag = [];
+    
+    for h=1:length(wLambda)
+        
+        wReal = [wReal,wSampleTime(k)*real(wLambda(h))];
+        wImag = [wImag,wSampleTime(k)*imag(wLambda(h))];
+    end
+    
+    hold all;
+    scatter(wReal,wImag);
+    legend(get(legend(gca),'String'),num2str(wSampleTime(k)));
+    
+end
+
 
 [A,B,C,D] = wSystem.mGetStateSpaceMatrix('observable');
 
@@ -35,7 +56,7 @@ load_system(model)
 tic
 
 wSaveFileName     = 'Y';
- 
+
 set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
 set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
 
@@ -70,28 +91,28 @@ set_param(strcat(model,'/AB_2'),'HzNum','wAdamsBashforthNum');
 set_param(strcat(model,'/AB_2'),'HzDen','wAdamsBashforthDen');
 
 set_param(model, 'StopTime', 'wSimulationTime');
- 
+
 set_param(model, 'MaxStep', 'wMaxStep');
- 
+
 myopts=simset('SrcWorkspace','current','DstWorkspace','current');
- 
+
 sim(model,wSimulationTime,myopts);
 while (strcmp(get_param(model,'SimulationStatus'),'stopped')==0);
 end
- 
+
 t_sim = toc;
 fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
- 
+
 %Post traitement
 load(wSaveFileName);
 wStruct = eval('wSaveFileName');
- 
+
 %Plots
 
 wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.State_space_block,Y.Observable_continuous],...
-'Open Loop Response, continuous simulation','Time (s)','Step Response');
+    'Open Loop Response, continuous simulation','Time (s)','Step Response');
 
 wPloter.mDrawTimeseriesPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
-'Open Loop Response, Adams Branshforth','Time (s)','Step Response','stairs');
+    'Open Loop Response, Adams Branshforth','Time (s)','Step Response','stairs');
 
-wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
+

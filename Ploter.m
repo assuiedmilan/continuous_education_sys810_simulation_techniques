@@ -37,28 +37,28 @@ classdef Ploter < handle
             
         end
         
-        function oHandle = mDrawStandardPlot(iThis,iValues,iPlot,varargin)           
-               
-                oHandle = iThis.mProcessStandardPlot(str2func(iPlot),iValues,varargin{:});
-                
+        function oHandle = mDrawStandardPlot(iThis,iValues,iPlot,varargin)
+            
+            oHandle = iThis.mProcessStandardPlot(str2func(iPlot),iValues,varargin{:});
+            
         end
         
         function oHandle = mDrawStabilityRegion(iThis,iTitle,varargin)
-               
-            wDiscretizer = Discretizer(1,varargin{:});            
-
+            
+            wDiscretizer = Discretizer(1,varargin{:});
+            
             wZ = (exp(1i*(0:.01:2*pi)))';
             
             [wTau,wL] = wDiscretizer.mGetDiscreteTf('continuous');
             
             for k = 1:length(wZ)
-                    
-                    wStabilityValues(k) = polyval(wL,wZ(k)) ./ polyval(wTau,wZ(k)); %#ok<AGROW>
-                    
+                
+                wStabilityValues(k) = polyval(wL,wZ(k)) ./ polyval(wTau,wZ(k)); %#ok<AGROW>
+                
             end
             
-             oHandle = mDrawStandardPlot(iThis,{real(wStabilityValues),imag(wStabilityValues)},'plot',strcat(iTitle,' stability region'),'Real axis','Imaginary axis');
-            
+            oHandle = mDrawStandardPlot(iThis,{real(wStabilityValues),imag(wStabilityValues)},'plot',strcat(iTitle,' stability region'),'Real axis','Imaginary axis');
+            legend('Stability region');
         end
         
         

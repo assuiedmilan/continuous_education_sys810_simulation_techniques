@@ -319,18 +319,9 @@ classdef Discretizer < handle
             
             wOneBaseBias = 1;
             
-            %Get transfert function polynomials and set them in a proper
-            %matlab order, opposed to polynomial order (aka [a(0),a(1),...,a(n-1),a(n)])
-            [wNum,wDen] = tfdata(iThis.mGetTf());
-            wDen = fliplr(wDen{1});
-            wNum = fliplr(wNum{1});
-            wOrder = length(wDen)-1;
+            [wNum,wDen,wOrder] = iThis.mGetMatlabOrderedCoefficients();
             
-            %Compute A matrix
-            A = diag(ones(1,wOrder-1),1);
-            for i=0:wOrder-1
-                A(wOrder,i+wOneBaseBias) = -wDen(i+wOneBaseBias)/wDen(length(wDen));
-            end
+            A = iThis.mProcessCannonicalAMatrix();
             
             %Compute beta values
             wBetaMatrix = zeros(wOrder+1,1);
@@ -354,7 +345,62 @@ classdef Discretizer < handle
             C = [1,zeros(1,wOrder-1)];
         end
         
+        function [A,B,C,D] = mProcessCommandableState(iThis)
+            
+            wOneBaseBias = 1;
+            
+            [wNum,wDen,wOrder] = iThis.mGetMatlabOrderedCoefficients(); %#ok<ASGLU>
+            
+            A = iThis.mProcessCannonicalAMatrix();
+                        
+            %Compute C values
+            B = zeros(1,wOrder);
+            for i=0:wOrder-1
+                B(1,i+wOneBaseBias) = wNum(i+wOneBaseBias);
+            end
+            
+            %Compute B and D
+            B = [zeros(1,wOrder-1),1]';
+            D = 0;
+            
+            %Compute C matrix.
+            C = [1,zeros(1,wOrder-1)];
+        end
+        
+        function [A] = mProcessCannonicalAMatrix(iThis)
+            
+            wOneBaseBias = 1;
+            
+            [wNum,wDen,wOrder] = iThis.mGetMatlabOrderedCoefficients(); %#ok<ASGLU>
+            
+            %Compute A matrix
+            A = diag(ones(1,wOrder-1),1);
+            for i=0:wOrder-1
+                A(wOrder,i+wOneBaseBias) = -wDen(i+wOneBaseBias);
+            end
+            
+        end
+        
+        function [oNum,oDen,oOrder] = mGetMatlabOrderedCoefficients(iThis)
+            
+            %Get transfert function polynomials and set them in a proper
+            %matlab order, opposed to polynomial order (aka [a(0),a(1),...,a(n-1),a(n)])
+            
+            %Also normalize the coefficients
+            [oNum,oDen] = tfdata(iThis.mGetTf());
+            
+            oDen = fliplr(oDen{1});
+            oNum = fliplr(oNum{1});
+            
+            oDen = oDen/oDen(length(oDen));
+            oNum = oNum/oDen(length(oDen));
+            
+            oOrder = length(oDen)-1;
+            
+        end
+        
     end %Private methods
+    
     
 end %Class
 
