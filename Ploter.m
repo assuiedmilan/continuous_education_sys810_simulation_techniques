@@ -22,7 +22,7 @@ classdef Ploter < handle
             
         end
         
-        %Public methods
+        %Public drawers
         function oHandle = mDrawTimeseriesPlot(iThis,iValues,iTitle,iXlabel,iYlabel,varargin)
             
             if(isempty(varargin))
@@ -62,14 +62,28 @@ classdef Ploter < handle
         end
         
         
-        %Accessors
-        
+        %Accessors        
         function mSetPaperPos(iThis,iPaperPos)
             iThis.mPaperPos = iPaperPos;
         end
         
         function mSetPaperSize(iThis,iPaperSize)
             iThis.mPaperSize = iPaperSize;
+        end
+
+        %Save methods 
+        function mProcessSaveDraw(iThis,iHandle)
+            
+            set(iHandle, 'PaperPosition', iThis.mPaperPos);
+            set(iHandle, 'PaperSize', iThis.mPaperSize);
+            saveas(iHandle, iHandle.Name, 'pdf');
+            
+        end
+        
+        function mProcessSaveModel(iThis,iBlock)
+            
+            saveas(get_param(iBlock,'Handle'), get_param(iBlock,'Name'), 'pdf');
+            
         end
         
     end %Public methods
@@ -89,14 +103,6 @@ classdef Ploter < handle
             if (iThis.mSaveAfterDraw)
                 iThis.mProcessSaveDraw(iHandle);
             end
-            
-        end
-        
-        function mProcessSaveDraw(iThis,iHandle)
-            
-            set(iHandle, 'PaperPosition', iThis.mPaperPos);
-            set(iHandle, 'PaperSize', iThis.mPaperSize);
-            saveas(iHandle, iHandle.Name, 'pdf');
             
         end
         
