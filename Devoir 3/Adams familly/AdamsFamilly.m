@@ -109,6 +109,10 @@ set_param(model, 'StopTime', 'wSimulationTime');
 
 set_param(model, 'MaxStep', 'wMaxStep');
 
+% ************************************************************ %
+% **********************  SIMULATION ************************* %
+% ************************************************************ %
+
 myopts=simset('SrcWorkspace','current','DstWorkspace','current');
 
 sim(model,wSimulationTime,myopts);
