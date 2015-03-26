@@ -133,7 +133,7 @@ x1c(1) = 0;   x2c(1) = 0; x3c(1) = 0;
 for n = 0:wSimulationTime/wSampleTime-2
     
     if (n == 0)
-        x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1));
+        x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1)); %#ok<*SAGROW>
         x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(f2c(n+1));
         x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(f3c(n+1));
     else
