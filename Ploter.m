@@ -124,24 +124,30 @@ classdef Ploter < handle
             
             oHandle=figure();
             oHandle.Name = func2str(iFuncHandle);
+            wPlotData = 0; %#ok<NASGU>
             
-            for i=1:2:length(iValues)
+            for i=1:length(iValues)
                 
                 iThis.mSetHold();
                 
-                if (i<length(iValues))
-                    
-                    iFuncHandle(iValues{i},iValues{i+1});
-                else
-                    iFuncHandle(iValues{i});
+                wPlotData = iValues{i};
+                if (any(size(wPlotData) == 2))
+                    if (size(wPlotData,1) == 2)
+                        iFuncHandle(wPlotData(1,:),wPlotData(2,:));
+                    else
+                        iFuncHandle(wPlotData(:,1),wPlotData(:,2));
+                    end
+                elseif (size(wPlotData,2) == 1)
+                    iFuncHandle(wPlotData(1));
                 end
                 
             end
             
-            iThis.mProcessLabels(oHandle,varargin{:});
-            
             if(length(varargin) > 3)
                 legend(varargin{4});
+                iThis.mProcessLabels(oHandle,varargin{1:3});
+            else
+                iThis.mProcessLabels(oHandle,varargin{:});
             end
             
             grid minor;

@@ -161,6 +161,6 @@ for n = 0:wSimulationTime/wSampleTime-2
     
 end
 
-wPloter.mDrawStandardPlot({Y.Observable_continuous.Time,Y.Observable_continuous.Data,t,100*x2c},...
+wPloter.mDrawStandardPlot({[Y.Observable_continuous.Time,Y.Observable_continuous.Data],[t;100*x2c]},...
     'stairs','Open Loop Response, Prediction-Correction vs Continuous simulation','Time (s)','Step Response',{'Commandable continuous';'Prediction-Correction'});
 
