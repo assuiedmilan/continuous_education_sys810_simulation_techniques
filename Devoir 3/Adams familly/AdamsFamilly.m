@@ -31,23 +31,23 @@ wPloter = Ploter([0 0 8 5],[8 5]);
 % wABStabilityHandle = wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
 % wLambda = pole(wSystem.mGetTf);
 % wSampleTimeList=0.01:0.01:0.1;
-% 
+%
 % set(0,'currentfigure',wABStabilityHandle);
 % for k=1:length(wSampleTimeList)
-%     
+%
 %     wReal = [];
 %     wImag = [];
-%     
+%
 %     for h=1:length(wLambda)
-%         
+%
 %         wReal = [wReal,wSampleTimeList(k)*real(wLambda(h))];
 %         wImag = [wImag,wSampleTimeList(k)*imag(wLambda(h))];
 %     end
-%     
+%
 %     hold all;
 %     scatter(wReal,wImag);
 %     legend(get(legend(gca),'String'),num2str(wSampleTimeList(k)));
-%     
+%
 % end
 
 % ************************************************************ %
@@ -58,10 +58,10 @@ model='adamsFamillyModel';
 load_system(model)
 tic
 
-wSaveFileName     = 'Y';
+wSaveFileName     = 'SimOutput';
 wContBlock = strcat(model,'/Continuous');
-wObsBlock = strcat(model,'/Observable continuous model');
-wComBlock = strcat(model,'/Commandable continuous model');
+wObsBlock = strcat(model,'/Observable continuous');
+wComBlock = strcat(model,'/Commandable continuous');
 wAB2Block = strcat(model,'/AB_2');
 
 set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
@@ -132,11 +132,11 @@ x1c(1) = 0;   x2c(1) = 0; x3c(1) = 0;
 
 for n = 0:wSimulationTime/wSampleTime-2
     
-    if (n == 0)        
+    if (n == 0)
         x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1));
         x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(f2c(n+1));
         x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(f3c(n+1));
-    else        
+    else
         x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1)-f1c(n));
         x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(f2c(n+1)-f2c(n));
         x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(f3c(n+1)-f3c(n));
@@ -162,18 +162,31 @@ end
 
 %Drawing and saving Plots
 
-wPloter.mDrawTimeseriesPlot([Y.Continuous_signal,Y.Commandable_continuous,Y.Observable_continuous],...
-    'Open Loop Response, continuous simulation','Time (s)','Step Response');
+wPloter.mDrawTimeseriesPlot([SimOutput.Continuous_signal...
+    ,SimOutput.Commandable_continuous...
+    ,SimOutput.Observable_continuous]...
+    ,'Open Loop Response, continuous simulation'...
+    ,'Time (s)'...
+    ,'Step Response');
 
-wPloter.mDrawTimeseriesPlot([Y.Observable_continuous,Y.Observable_Adams_Branshforth],...
-    'Open Loop Response, Adams Branshforth','Time (s)','Step Response','stairs');
+wPloter.mDrawTimeseriesPlot([SimOutput.Observable_continuous...
+    ,SimOutput.Observable_Adams_Branshforth]...
+    ,'Open Loop Response, Adams Branshforth'...
+    ,'Time (s)'...
+    ,'Step Response'...
+    ,'stairs');
 
-wPloter.mDrawStandardPlot({[Y.Observable_continuous.Time,Y.Observable_continuous.Data],[t;100*x2c]},...
-    'stairs','Open Loop Response, Prediction-Correction vs Continuous simulation','Time (s)','Step Response',{'Commandable continuous';'Prediction-Correction'});
+wPloter.mDrawStandardPlot({[SimOutput.Observable_continuous.Time...
+    ,SimOutput.Observable_continuous.Data]...
+    ,[t;100*x2c]}...
+    ,'stairs'...
+    ,'Open Loop Response, Prediction-Correction vs Continuous simulation'...
+    ,'Time (s)'...
+    ,'Step Response'...
+    ,{'Commandable continuous';'Prediction-Correction'});
 
 %Saving Model
 wPloter.mProcessSaveModel(model);
-wPloter.mProcessSaveModel(wContBlock);
 wPloter.mProcessSaveModel(wObsBlock);
 wPloter.mProcessSaveModel(wComBlock);
 wPloter.mProcessSaveModel(wAB2Block);

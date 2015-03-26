@@ -82,7 +82,7 @@ classdef Ploter < handle
         
         function mProcessSaveModel(iThis,iBlock)
             
-            saveas(get_param(iBlock,'Handle'), get_param(iBlock,'Name'), 'pdf');
+            saveas(get_param(iBlock,'Handle'), strcat('SimBlock_',get_param(iBlock,'Name')), 'pdf');
             
         end
         
