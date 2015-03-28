@@ -435,6 +435,7 @@ classdef Discretizer < handle
             
             wZvalues = (exp(1i*(0:.01:2*pi)))';
             wPloter = Ploter([0 0 8 5],[8 5]);
+            wPloter.mSetSaveAfterDraw(false);
             
             wStabilityValues = zeros(1,length(wZvalues));
             for k = 1:length(wZvalues)
@@ -445,7 +446,7 @@ classdef Discretizer < handle
             
             oHandle = wPloter.mDrawStandardPlot({[real(wStabilityValues);imag(wStabilityValues)]}...
                 ,'plot'...
-                ,iTitle...
+                ,['Stability Region ',iTitle]...
                 ,'Real axis'...
                 ,'Imaginary axis'...
                 ,'Stability region');
@@ -453,7 +454,9 @@ classdef Discretizer < handle
         
         function oHandle = mProcessPolesAndStabilityRegion(iThis,iTitle,iTauCoefficients,iLCoefficients,iSampleTime)
             
-            oHandle = iThis.mProcessStabilityRegion([iTitle,' T=',num2str(iSampleTime)],iTauCoefficients,iLCoefficients);
+            wPloter = Ploter([0 0 8 5],[8 5]);
+            
+            oHandle = iThis.mProcessStabilityRegion([iTitle,' T=',strrep(num2str(iSampleTime),'.','-'),'s'],iTauCoefficients,iLCoefficients);
             set(0,'currentfigure',oHandle);
             wSystemPoles = iThis.mGetPoles('continuous');
             
@@ -466,6 +469,7 @@ classdef Discretizer < handle
                 
             end
             
+            wPloter.mProcessSaveDraw(oHandle);
         end
         
         function oHandle = mProcessStabilityCircle(iThis,iTitle,iTauCoefficients,iLCoefficients,iSampleTime)
@@ -504,7 +508,7 @@ classdef Discretizer < handle
             
             oHandle = wPloter.mDrawStandardPlot([[wX;wY],wClosedLoopPoles]...
                 ,'plot'...
-                ,[iTitle,' T=',num2str(iSampleTime)]...
+                ,['Stability Circle ',iTitle,' T=',strrep(num2str(iSampleTime),'.','-'),'s']...
                 ,'Real axis'...
                 ,'Imaginary axis'...
                 ,wLegendString);

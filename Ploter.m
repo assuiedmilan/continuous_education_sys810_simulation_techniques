@@ -52,11 +52,16 @@ classdef Ploter < handle
             iThis.mPaperSize = iPaperSize;
         end
         
+        function mSetSaveAfterDraw(iThis,iValue)
+            iThis.mSaveAfterDraw = iValue;
+        end
+        
         %Save methods
         function mProcessSaveDraw(iThis,iHandle)
             
             set(iHandle, 'PaperPosition', iThis.mPaperPos);
             set(iHandle, 'PaperSize', iThis.mPaperSize);
+            %waitfor(iHandle);
             saveas(iHandle, iHandle.Name, 'pdf');
             
         end
@@ -77,6 +82,11 @@ classdef Ploter < handle
                 hold all;
             end
             
+        end
+
+        function mSetSaveDraw(iThis,iValue)
+            
+            iThis.mSaveAfterDraw = iValue;
         end
         
         function mSaveDraw(iThis,iHandle)

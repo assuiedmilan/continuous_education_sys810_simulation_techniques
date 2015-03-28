@@ -8,9 +8,8 @@ close all;
 clear all; %#ok<CLSCR>
 clc;
 
-wSampleTimes=[0.5,0.11,0.10,0.09,0.01];
+wSampleTimes=[0.5,0.10,0.09];
 wSimulationTime=10;
-wMaxStep=wSampleTime/1000;
 
 wContinuousSystemNum = [100,0];
 wContinuousSystemDen = [1,11,30,200];
@@ -18,44 +17,23 @@ wContinuousSystemDen = [1,11,30,200];
 wAdamsBashforthNum = [3,-1];
 wAdamsBashforthDen = [2,-2,0];
 
-%Objects initialization
-wSystem = Discretizer(wSampleTime,...
-    wContinuousSystemNum,...
-    wContinuousSystemDen);
-[Ao,Bo,Co,Do] = wSystem.mGetStateSpaceMatrix('observable');
-[Ac,Bc,Cc,Dc] = wSystem.mGetStateSpaceMatrix('commandable');
-
 wPloter = Ploter([0 0 8 5],[8 5]);
 
 for i=1:length(wSampleTimes)
+    
     wSampleTime = wSampleTimes(i);
+    wMaxStep=wSampleTime/1000;
+
+    %Objects initialization
+    wSystem = Discretizer(wSampleTime,...
+        wContinuousSystemNum,...
+        wContinuousSystemDen);
+    [Ao,Bo,Co,Do] = wSystem.mGetStateSpaceMatrix('observable');
+    [Ac,Bc,Cc,Dc] = wSystem.mGetStateSpaceMatrix('commandable');
+    
     %Stability study
-    wABStabilityHandle = wSystem.mComputeStabilityRegion('Adam-Brashforth second order',0.09,wAdamsBashforthNum,wAdamsBashforthDen);
+    wSystem.mComputeStabilityRegion('Adam-Brashforth second order',0.09,wAdamsBashforthNum,wAdamsBashforthDen);
     
-    wLambda = pole(wSystem.mGetTf);
-    wSampleTimeList=0.05;
-    
-    %Stability region
-    set(0,'currentfigure',wABStabilityHandle);
-    for k=1:length(wSampleTimeList)
-        
-        wReal = [];
-        wImag = [];
-        
-        for h=1:length(wLambda)
-            
-            wReal = [wReal,wSampleTimeList(k)*real(wLambda(h))];
-            wImag = [wImag,wSampleTimeList(k)*imag(wLambda(h))];
-        end
-        
-        hold all;
-        scatter(wReal,wImag);
-        scatter(wReal,wImag);
-        legend(get(legend(gca),'String'),num2str(wSampleTimeList(k)));
-        
-    end
-    
-    wABStabilityCircleHandle;
     % ************************************************************ %
     % ****************  SIMULINK INITIALIZATION ****************** %
     % ************************************************************ %
@@ -175,13 +153,13 @@ for i=1:length(wSampleTimes)
     wPloter.mDrawTimeseriesPlot([SimOutput.Continuous_signal...
         ,SimOutput.Commandable_continuous...
         ,SimOutput.Observable_continuous]...
-        ,['Open Loop Response, continuous simulation T=',wSampleTime]...
+        ,['Open Loop Response, continuous simulation T',strrep(num2str(wSampleTime),'.','-'),'s']...
         ,'Time (s)'...
         ,'Step Response');
     
     wPloter.mDrawTimeseriesPlot([SimOutput.Observable_continuous...
         ,SimOutput.Observable_Adams_Branshforth]...
-        ,['Open Loop Response, Adams Branshforth T=',wSampleTime]...
+        ,['Open Loop Response, Adams Branshforth T',strrep(num2str(wSampleTime),'.','-'),'s']...
         ,'Time (s)'...
         ,'Step Response'...
         ,'stairs');
@@ -190,7 +168,7 @@ for i=1:length(wSampleTimes)
         ,SimOutput.Observable_continuous.Data]...
         ,[t;100*x2c]}...
         ,'stairs'...
-        ,['Open Loop Response, Prediction-Correction vs Continuous simulation T=',wSampleTime]...
+        ,['Open Loop Response, Prediction-Correction vs Continuous simulation T',strrep(num2str(wSampleTime),'.','-'),'s']...
         ,'Time (s)'...
         ,'Step Response'...
         ,{'Commandable continuous';'Prediction-Correction'});
