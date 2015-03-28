@@ -8,7 +8,7 @@ close all;
 clear all; %#ok<CLSCR>
 clc;
 
-wSampleTimes=[0.5,0.10,0.09];
+wSampleTimes=[0.5,0.10,0.09,0.01];
 wSimulationTime=10;
 
 wContinuousSystemNum = [100,0];
@@ -32,7 +32,7 @@ for i=1:length(wSampleTimes)
     [Ac,Bc,Cc,Dc] = wSystem.mGetStateSpaceMatrix('commandable');
     
     %Stability study
-    wSystem.mComputeStabilityRegion('Adam-Brashforth second order',0.09,wAdamsBashforthNum,wAdamsBashforthDen);
+    wSystem.mComputeStabilityRegion('Adam-Brashforth second order',wSampleTime,wAdamsBashforthNum,wAdamsBashforthDen);
     
     % ************************************************************ %
     % ****************  SIMULINK INITIALIZATION ****************** %
@@ -111,7 +111,6 @@ for i=1:length(wSampleTimes)
     % ************************************************************ %
     
     %Parameters
-    wSampleTime = 0.005;
     t=linspace(0,wSimulationTime,wSimulationTime*(1/wSampleTime));
     
     %Initial conditions
