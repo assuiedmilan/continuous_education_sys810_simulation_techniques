@@ -125,17 +125,18 @@ classdef Ploter < handle
                         %Case where we have a matrix and a character
                         %specifier
                         wMarker = wPlotData{2};
-                        wPlotData = wPlotData{1};
+                        wData = wPlotData{1};
                     else
                         wMarker = '-';
                     end
-                    
-                    if (size(wPlotData,1) == 2)
-                        iFuncHandle(wPlotData(1,:),wPlotData(2,:),wMarker);
-                    else
-                        iFuncHandle(wPlotData(:,1),wPlotData(:,2),wMarker);
+                        
+                    else%Regular matrix
+                        if (size(wPlotData,1) == 2)
+                            iFuncHandle(wPlotData(1,:),wPlotData(2,:),wMarker);
+                        else
+                            iFuncHandle(wPlotData(:,1),wPlotData(:,2));
+                        end
                     end
-                    
                 elseif (size(wPlotData,2) == 1)
                     iFuncHandle(wPlotData(1));
                 end
