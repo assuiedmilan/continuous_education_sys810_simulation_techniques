@@ -57,6 +57,7 @@ classdef Ploter < handle
             
             set(iHandle, 'PaperPosition', iThis.mPaperPos);
             set(iHandle, 'PaperSize', iThis.mPaperSize);
+            %waitfor(iHandle);
             saveas(iHandle, iHandle.Name, 'pdf');
             
         end
@@ -78,6 +79,13 @@ classdef Ploter < handle
             end
             
         end
+
+            function mSwitchSaveDraw(iThis)
+            
+    if(iThis.mSaveAfterDraw)
+        iThis.mSaveAfterDraw = FALSE;
+    else
+        iThis.mSaveAfterDraw = 
         
         function mSaveDraw(iThis,iHandle)
             
@@ -125,18 +133,17 @@ classdef Ploter < handle
                         %Case where we have a matrix and a character
                         %specifier
                         wMarker = wPlotData{2};
-                        wData = wPlotData{1};
+                        wPlotData = wPlotData{1};
                     else
                         wMarker = '-';
                     end
-                        
-                    else%Regular matrix
-                        if (size(wPlotData,1) == 2)
-                            iFuncHandle(wPlotData(1,:),wPlotData(2,:),wMarker);
-                        else
-                            iFuncHandle(wPlotData(:,1),wPlotData(:,2));
-                        end
+                    
+                    if (size(wPlotData,1) == 2)
+                        iFuncHandle(wPlotData(1,:),wPlotData(2,:),wMarker);
+                    else
+                        iFuncHandle(wPlotData(:,1),wPlotData(:,2),wMarker);
                     end
+                    
                 elseif (size(wPlotData,2) == 1)
                     iFuncHandle(wPlotData(1));
                 end
