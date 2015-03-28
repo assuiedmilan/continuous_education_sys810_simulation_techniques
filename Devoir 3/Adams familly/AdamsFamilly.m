@@ -28,28 +28,32 @@ wSystem = Discretizer(wSampleTime,...
 wPloter = Ploter([0 0 8 5],[8 5]);
 
 %Stability study
-% wABStabilityHandle = wPloter.mDrawStabilityRegion('Adam-Brashforth second order',wAdamsBashforthNum,wAdamsBashforthDen);
-% wLambda = pole(wSystem.mGetTf);
-% wSampleTimeList=0.01:0.01:0.1;
-%
-% set(0,'currentfigure',wABStabilityHandle);
-% for k=1:length(wSampleTimeList)
-%
-%     wReal = [];
-%     wImag = [];
-%
-%     for h=1:length(wLambda)
-%
-%         wReal = [wReal,wSampleTimeList(k)*real(wLambda(h))];
-%         wImag = [wImag,wSampleTimeList(k)*imag(wLambda(h))];
-%     end
-%
-%     hold all;
-%     scatter(wReal,wImag);
-%     legend(get(legend(gca),'String'),num2str(wSampleTimeList(k)));
-%
-% end
+wABStabilityHandle = wSystem.mComputeStabilityRegion('Adam-Brashforth second order',1,wAdamsBashforthNum,wAdamsBashforthDen);
 
+wLambda = pole(wSystem.mGetTf);
+wSampleTimeList=0.05;
+
+%Stability region
+ set(0,'currentfigure',wABStabilityHandle);
+ for k=1:length(wSampleTimeList)
+
+     wReal = [];
+     wImag = [];
+
+     for h=1:length(wLambda)
+
+         wReal = [wReal,wSampleTimeList(k)*real(wLambda(h))];
+         wImag = [wImag,wSampleTimeList(k)*imag(wLambda(h))];
+     end
+
+     hold all;
+     scatter(wReal,wImag);
+     scatter(wReal,wImag);
+     legend(get(legend(gca),'String'),num2str(wSampleTimeList(k)));
+
+ end
+
+ wABStabilityCircleHandle;
 % ************************************************************ %
 % ****************  SIMULINK INITIALIZATION ****************** %
 % ************************************************************ %

@@ -461,7 +461,7 @@ classdef Discretizer < handle
                 
                 hold all;
                 wPlotMarkersListIndex = mod(k,length(iThis.mPlotMarkersList));
-                plot(real(wSystemPoles(k))*iSampleTime,imag(wSystemPoles(k))*iSampleTime,iThis.mPlotMarkersList(wPlotMarkersListIndex));
+                plot(real(wSystemPoles(k)),imag(wSystemPoles(k))*iSampleTime,iThis.mPlotMarkersList(wPlotMarkersListIndex));
                 legend(get(legend(gca),'String'),['Pole ',num2str(wSystemPoles(k))]);
                 
             end
@@ -497,7 +497,6 @@ classdef Discretizer < handle
                 end
                 
                 wClosedLoopPoles{wClosedLoopPolesStartIndex+j+1} = {[real(wExactSystemPoles(k)),imag(wExactSystemPoles(k))],iThis.mPlotMarkersList(wPlotMarkersListIndex)};
-                legend(get(legend(gca),'String'),['Pole ',num2str(wSystemPoles(k))]);
                 wLegendString{k+1} = ['Pole ',num2str(wSystemPoles(k))];
             end
             
