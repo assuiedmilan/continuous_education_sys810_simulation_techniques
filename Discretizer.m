@@ -13,6 +13,26 @@ classdef Discretizer < handle
         
     end
     
+    methods(Static)
+        
+        function oResult = mProcessStabilityRoots_PredictorCorrector(iPredTf,iCorrTf)
+
+				wPredictor = Discretizer(1,iPredTf);
+				wCorrector = Discretizer(1,iCorrTf);
+								
+				[wTauPredictor,wRhoPredictor] = wPredictor.mGetDiscreteTf('continuous');
+				[wTauCorrector,wRhoCorrector] = wCorrector.mGetDiscreteTf('continuous');
+				
+            wBetaK = wTauCorrector(1);
+            
+            wStabilityPolynom = [-1*poly2sym(wTauPredictor*wBetaK,'z') poly2sym(wBetaK*wRhoPredictor,'z')-poly2sym(wTauCorrector,'z') poly2sym(wRhoCorrector,'z')];
+            
+            wStabilityRoots = roots(wStabilityPolynom);
+            
+            oResult = {wStabilityPolynom, wStabilityRoots};
+        end
+    end
+    
     methods %Public
         
         %Constructors
@@ -161,17 +181,26 @@ classdef Discretizer < handle
             
             
             if isempty(varargin)
-                h = errodlg('Error, this methods needs a transfer function in argument. Specify as [num,den] or pass a Tf object');
-                waitfor(h);
-                return;
+				if (~all(isa(varargin,'tf')))
+					h = errodlg('Error, this methods needs a transfer function in argument. Specify as a Tf object');
+					waitfor(h);
+					return;
+				end
             end
             
-            wDiscretizer = Discretizer(1,varargin{:});
-            [wTauCoefficients,wLCoefficients] = wDiscretizer.mGetDiscreteTf('continuous');
+			if(length(varargin) == 1)
+			
+				wIntegrator = Discretizer(1,varargin{:});
+				[wTauCoefficients,wLCoefficients] = wIntegrator.mGetDiscreteTf('continuous');
             
-            oStabRegionHdl = iThis.mProcessPolesAndStabilityRegion(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
-            oStabCircleHdl = iThis.mProcessStabilityCircle(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
+				oStabRegionHdl = iThis.mProcessPolesAndStabilityRegion(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
+				oStabCircleHdl = iThis.mProcessStabilityCircle(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
+				
+            elseif (length(varargin) == 2)
+				
+                %
             
+			end
         end
         
     end %Public methods
