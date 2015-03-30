@@ -13,6 +13,10 @@ classdef Discretizer < handle
         
     end
     
+    methods(Static)
+        		
+		
+
     methods %Public
         
         %Constructors
@@ -161,17 +165,33 @@ classdef Discretizer < handle
             
             
             if isempty(varargin)
-                h = errodlg('Error, this methods needs a transfer function in argument. Specify as [num,den] or pass a Tf object');
-                waitfor(h);
-                return;
+				if (~all(isa(varargin,'tf')))
+					h = errodlg('Error, this methods needs a transfer function in argument. Specify as a Tf object');
+					waitfor(h);
+					return;
+				end
             end
             
-            wDiscretizer = Discretizer(1,varargin{:});
-            [wTauCoefficients,wLCoefficients] = wDiscretizer.mGetDiscreteTf('continuous');
+			if(length(varargin) == 1)
+			
+				wIntegrator = Discretizer(1,varargin{:});
+				[wTauCoefficients,wLCoefficients] = wIntegrator.mGetDiscreteTf('continuous');
             
-            oStabRegionHdl = iThis.mProcessPolesAndStabilityRegion(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
-            oStabCircleHdl = iThis.mProcessStabilityCircle(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
+				oStabRegionHdl = iThis.mProcessPolesAndStabilityRegion(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
+				oStabCircleHdl = iThis.mProcessStabilityCircle(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
+				
+            elseif (length(varargin) == 2)
+				
+				wPredictor = Discretizer(1,varargin{1});
+				wCorrector = Discretizer(1,varargin{2});
+								
+				[wTauPredictor,wRhoPredictor] = wPredictor.mGetDiscreteTf('continuous');
+				[wTauCorrector,wRhoCorrector] = wCorrector.mGetDiscreteTf('continuous');
+				
+				oStabRegionHdl = iThis.mProcessPolesAndStabilityRegion_PredictorCorrector(iTitle,wTauPredictor,wRhoPredictor,wTauCorrector,wRhoCorrector,iSampleTime);
+				oStabCircleHdl = 0;
             
+			end
         end
         
     end %Public methods
@@ -456,7 +476,7 @@ classdef Discretizer < handle
             
             wPloter = Ploter([0 0 8 5],[8 5]);
             
-            oHandle = iThis.mProcessStabilityRegion([iTitle,' T ',strrep(num2str(iSampleTime),'.',','),'s'],iTauCoefficients,iLCoefficients);
+            oHandle = iThis.mProcessStabilityRegion([iTitle,' T=',strrep(num2str(iSampleTime),'.','-'),'s'],iTauCoefficients,iLCoefficients);
             set(0,'currentfigure',oHandle);
             wSystemPoles = iThis.mGetPoles('continuous');
             
@@ -501,14 +521,13 @@ classdef Discretizer < handle
                 end
                 
                 wClosedLoopPoles{wClosedLoopPolesStartIndex+j+1} = {[real(wExactSystemPoles(k)),imag(wExactSystemPoles(k))],iThis.mPlotMarkersList(wPlotMarkersListIndex)};
-                legend(get(legend(gca),'String'),['Pole ',num2str(wSystemPoles(k))]);
                 wLegendString{k+1} = ['Pole ',num2str(wSystemPoles(k))];
             end
             
             
             oHandle = wPloter.mDrawStandardPlot([[wX;wY],wClosedLoopPoles]...
                 ,'plot'...
-                ,['Stability Circle ',iTitle,' T ',strrep(num2str(iSampleTime),'.','-'),'s']...
+                ,['Stability Circle ',iTitle,' T=',strrep(num2str(iSampleTime),'.','-'),'s']...
                 ,'Real axis'...
                 ,'Imaginary axis'...
                 ,wLegendString);

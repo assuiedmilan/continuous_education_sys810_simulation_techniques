@@ -8,7 +8,7 @@ close all;
 clear all; %#ok<CLSCR>
 clc;
 
-wSampleTimes=[0.5,0.10,0.09,0.01];
+wSampleTimes=[0.2,0.011,0.10,0.09];
 wSimulationTime=10;
 
 wContinuousSystemNum = [100,0];
@@ -48,7 +48,7 @@ for i=1:length(wSampleTimes)
     wComBlock = strcat(model,'/Commandable continuous');
     wAB2Block = strcat(model,'/AB_2');
     
-    set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
+    %set_param(model,'StopFcn','save(wSaveFileName,wSaveFileName)');
     set_param(strcat(model,'/Output'),'VariableName',wSaveFileName);
     
     %Parametrage simulation continue
