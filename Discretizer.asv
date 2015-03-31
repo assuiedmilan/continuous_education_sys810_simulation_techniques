@@ -467,7 +467,7 @@ classdef Discretizer < handle
         function oHandle = mProcessStabilityRegion(iThis,iTitle,iTauCoefficients,iLCoefficients)
             
             wZvalues = (exp(1i*(0:.01:2*pi)))';
-            wPloter = Ploter([0 0 5 5],[5 5]);
+            wPloter = Ploter([0 0 8 5],[8 5]);
             wPloter.mSetSaveAfterDraw(false);
             
             wStabilityValues = zeros(1,length(wZvalues));
@@ -490,7 +490,7 @@ classdef Discretizer < handle
         function oHandle = mProcessPredictorCorrectorStabilityRegion(iThis,iTitle,iTauPredictor,iRhoPredictor,iTauCorrector,iRhoCorrector)
             
             wZvalues = (exp(1i*(0:.01:2*pi)))';            
-            wPloter = Ploter([0 0 5 5],[5 5]);
+            wPloter = Ploter([0 0 8 5],[8 5]);
             wPloter.mSetSaveAfterDraw(false);
             
             wBetaK = iTauCorrector(1);
@@ -528,16 +528,15 @@ classdef Discretizer < handle
             
             wLegendString = {'Stability Circle'};
             
-            wPloter = Ploter([0 0 5 5],[5 5]);
+            wPloter = Ploter([0 0 8 5],[8 5]);
             wSystemPoles = iThis.mGetPoles('continuous');
             
             wExactSystemPoles = exp(wSystemPoles*wSampleTime);
             
-            wClosedLoopPoles = cell(1,2*length(wExactSystemPoles));
+            wClosedLoopPoles = zeros(1,length(wExactSystemPoles));
             
-            for k=1:1:length(wExactSystemPoles)
+            for k=1:length(wExactSystemPoles)
                 
-                %Storing discret poles
                 wClosedLoopRoots = roots(iLCoefficients-wExactSystemPoles(k)*wSampleTime*iTauCoefficients);
                 
                 wPlotMarkersListIndex = mod(k,length(iThis.mPlotMarkersList));
@@ -550,16 +549,10 @@ classdef Discretizer < handle
                     wImagPart(j) = imag(wClosedLoopRoots(j));
                 end
                 
-                wClosedLoopPoles{2*k-1} = {[wRealPart;wImagPart],iThis.mPlotMarkersList(wPlotMarkersListIndex)};
-                wLegendString{2*k} = ['Pole: ',num2str(wSystemPoles(k))];
-                
-                %Storing exact pole on next index
-                
-                wPlotMarkersListIndex = mod(k+1,length(iThis.mPlotMarkersList));
-                wClosedLoopPoles{2*k} = {[real(wExactSystemPoles(k));imag(wExactSystemPoles(k))],iThis.mPlotMarkersList(wPlotMarkersListIndex)};
-                wLegendString{2*k+1} = ['Exact Pole: ',num2str(wSystemPoles(k))];
-                
+                wClosedLoopPoles{k} = {[wRealPart;wImagPart],iThis.mPlotMarkersList(wPlotMarkersListIndex)};
+                wLegendString{k+1} = ['Pole ',num2str(wSystemPoles(k))];
             end
+            
             
             oHandle = wPloter.mDrawStandardPlot([[wX;wY],wClosedLoopPoles]...
                 ,'plot'...
