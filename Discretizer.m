@@ -12,27 +12,7 @@ classdef Discretizer < handle
         mQBoxer;
         
     end
-    
-    methods(Static)
-        
-        function oResult = mProcessStabilityRoots_PredictorCorrector(iPredTf,iCorrTf)
-
-				wPredictor = Discretizer(1,iPredTf);
-				wCorrector = Discretizer(1,iCorrTf);
-								
-				[wTauPredictor,wRhoPredictor] = wPredictor.mGetDiscreteTf('continuous');
-				[wTauCorrector,wRhoCorrector] = wCorrector.mGetDiscreteTf('continuous');
-				
-            wBetaK = wTauCorrector(1);
             
-            wStabilityPolynom = [-1*poly2sym(wTauPredictor*wBetaK,'z') poly2sym(wBetaK*wRhoPredictor,'z')-poly2sym(wTauCorrector,'z') poly2sym(wRhoCorrector,'z')];
-            
-            wStabilityRoots = roots(wStabilityPolynom);
-            
-            oResult = {wStabilityPolynom, wStabilityRoots};
-        end
-    end
-    
     methods %Public
         
         %Constructors
@@ -177,30 +157,36 @@ classdef Discretizer < handle
         end
         
         %Stability study
-        function [oStabRegionHdl,oStabCircleHdl] = mComputeStabilityRegion(iThis,iTitle,iSampleTime,varargin)
+        function [oStabRegionHdl,oStabCircleHdl] = mComputeStabilityRegion(iThis,iTitle,varargin)
             
             
             if isempty(varargin)
-				if (~all(isa(varargin,'tf')))
-					h = errodlg('Error, this methods needs a transfer function in argument. Specify as a Tf object');
-					waitfor(h);
-					return;
-				end
+                h = errordlg('Error, this methods needs a transfer function in argument. Specify as a Tf object');
+                waitfor(h);
+                return;
             end
             
-			if(length(varargin) == 1)
-			
-				wIntegrator = Discretizer(1,varargin{:});
-				[wTauCoefficients,wLCoefficients] = wIntegrator.mGetDiscreteTf('continuous');
+            if(length(varargin) == 1)
+                
+                wIntegrator = Discretizer(1,varargin{:});
+                [wTauCoefficients,wLCoefficients] = wIntegrator.mGetDiscreteTf('continuous');
+                
+                oStabRegionHdl = iThis.mProcessStabilityRegion(iTitle,wTauCoefficients,wLCoefficients);
+                oStabCircleHdl = iThis.mProcessStabilityCircle(iTitle,wTauCoefficients,wLCoefficients);
+                
+            elseif(length(varargin) == 2)
+                
+                wPredictor = Discretizer(1,varargin{1});
+                wCorrector = Discretizer(1,varargin{2});
+                
+                [wTauPredictor,wRhoPredictor] = wPredictor.mGetDiscreteTf('continuous');
+                [wTauCorrector,wRhoCorrector] = wCorrector.mGetDiscreteTf('continuous');
+                
+                oStabRegionHdl = iThis.mProcessPredictorCorrectorStabilityRegion(iTitle,wTauPredictor,wRhoPredictor,wTauCorrector,wRhoCorrector);
+                oStabCircleHdl = 0;
+                                
+            end
             
-				oStabRegionHdl = iThis.mProcessPolesAndStabilityRegion(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
-				oStabCircleHdl = iThis.mProcessStabilityCircle(iTitle,wTauCoefficients,wLCoefficients,iSampleTime);
-				
-            elseif (length(varargin) == 2)
-				
-                %
-            
-			end
         end
         
     end %Public methods
@@ -459,6 +445,24 @@ classdef Discretizer < handle
             oOrder = length(oDen)-1;
             
         end
+
+        function mAddPolesToStabilityRegion(iThis,iFigureHandle,iPloter)
+
+            set(0,'currentfigure',iFigureHandle);
+            wSystemPoles = iThis.mGetPoles('continuous');
+            wSampleTime = iThis.mGetSampleTime();
+            
+            for k=1:length(wSystemPoles)
+                
+                hold all;
+                wPlotMarkersListIndex = mod(k,length(iThis.mPlotMarkersList));
+                plot(real(wSystemPoles(k))*wSampleTime,imag(wSystemPoles(k))*wSampleTime,iThis.mPlotMarkersList(wPlotMarkersListIndex));
+                legend(get(legend(gca),'String'),['Pole ',num2str(wSystemPoles(k))]);
+                
+            end
+            
+            iPloter.mProcessSaveDraw(iFigureHandle);
+        end
         
         function oHandle = mProcessStabilityRegion(iThis,iTitle,iTauCoefficients,iLCoefficients)
             
@@ -479,46 +483,59 @@ classdef Discretizer < handle
                 ,'Real axis'...
                 ,'Imaginary axis'...
                 ,'Stability region');
+            
+            iThis.mAddPolesToStabilityRegion(oHandle,wPloter);
         end
         
-        function oHandle = mProcessPolesAndStabilityRegion(iThis,iTitle,iTauCoefficients,iLCoefficients,iSampleTime)
+        function oHandle = mProcessPredictorCorrectorStabilityRegion(iThis,iTitle,iTauPredictor,iRhoPredictor,iTauCorrector,iRhoCorrector)
             
+            wZvalues = (exp(1i*(0:.01:2*pi)))';            
             wPloter = Ploter([0 0 8 5],[8 5]);
+            wPloter.mSetSaveAfterDraw(false);
             
-            oHandle = iThis.mProcessStabilityRegion([iTitle,' T=',strrep(num2str(iSampleTime),'.','-'),'s'],iTauCoefficients,iLCoefficients);
-            set(0,'currentfigure',oHandle);
-            wSystemPoles = iThis.mGetPoles('continuous');
+            wBetaK = iTauCorrector(1);
             
-            for k=1:length(wSystemPoles)
+            wStabilityRoots = zeros(1,2*length(wZvalues));
+            for k=1:length(wZvalues)
                 
-                hold all;
-                wPlotMarkersListIndex = mod(k,length(iThis.mPlotMarkersList));
-                plot(real(wSystemPoles(k))*iSampleTime,imag(wSystemPoles(k))*iSampleTime,iThis.mPlotMarkersList(wPlotMarkersListIndex));
-                legend(get(legend(gca),'String'),['Pole ',num2str(wSystemPoles(k))]);
+                wP1 = -wBetaK * polyval(iTauPredictor,wZvalues(k));
+                wP2 = wBetaK * polyval(iRhoPredictor,wZvalues(k)) - polyval(iTauCorrector,wZvalues(k));
+                wP3 = polyval(iRhoCorrector,wZvalues(k));
+                
+                wRoots = roots([wP1,wP2,wP3]);
+                wStabilityRoots(2*k-1) = wRoots(1);
+                wStabilityRoots(2*k) = wRoots(2);
                 
             end
             
-            wPloter.mProcessSaveDraw(oHandle);
+            oHandle= wPloter.mDrawStandardPlot({{[real(wStabilityRoots);imag(wStabilityRoots)],'.'}}...
+                ,'plot'...
+                ,['Predictor Corrector Stability Region ',iTitle]...
+                ,'Real axis'...
+                ,'Imaginary axis');
+            
+            iThis.mAddPolesToStabilityRegion(oHandle,wPloter);
+            
         end
         
-        function oHandle = mProcessStabilityCircle(iThis,iTitle,iTauCoefficients,iLCoefficients,iSampleTime)
+        function oHandle = mProcessStabilityCircle(iThis,iTitle,iTauCoefficients,iLCoefficients)
             
             %Unit circle param
             Wteta=0:0.001:2*pi;
             wX=1*cos(Wteta);
             wY=1*sin(Wteta);
-            
+            wSampleTime = iThis.mGetSampleTime();
             
             wLegendString = {'Stability Circle'};
             
             wPloter = Ploter([0 0 8 5],[8 5]);
             wSystemPoles = iThis.mGetPoles('continuous');
             
-            wExactSystemPoles = exp(wSystemPoles*iSampleTime);
+            wExactSystemPoles = exp(wSystemPoles*wSampleTime);
             
             for k=1:length(wExactSystemPoles)
                 
-                wClosedLoopRoots = roots(iLCoefficients-wExactSystemPoles(k)*iSampleTime*iTauCoefficients);
+                wClosedLoopRoots = roots(iLCoefficients-wExactSystemPoles(k)*wSampleTime*iTauCoefficients);
                 
                 wClosedLoopNumberOfValuesToAdd = (length(wClosedLoopRoots)+1);
                 wClosedLoopPolesStartIndex = (k-1) * wClosedLoopNumberOfValuesToAdd ;
@@ -536,7 +553,7 @@ classdef Discretizer < handle
             
             oHandle = wPloter.mDrawStandardPlot([[wX;wY],wClosedLoopPoles]...
                 ,'plot'...
-                ,['Stability Circle ',iTitle,' T=',strrep(num2str(iSampleTime),'.','-'),'s']...
+                ,['Stability Circle ',iTitle,' T=',strrep(num2str(wSampleTime),'.','-'),'s']...
                 ,'Real axis'...
                 ,'Imaginary axis'...
                 ,wLegendString);
