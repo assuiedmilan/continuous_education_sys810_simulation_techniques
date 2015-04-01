@@ -153,7 +153,7 @@ classdef Ploter < handle
             end
             
             if(length(varargin) > 3)
-                legend(varargin{4},'Location','bestoutside');
+                legend(varargin{4},'Location','best');
                 iThis.mProcessLabels(oHandle,varargin{1:3});
             else
                 iThis.mProcessLabels(oHandle,varargin{:});
