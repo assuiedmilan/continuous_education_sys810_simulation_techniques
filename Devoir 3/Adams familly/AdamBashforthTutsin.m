@@ -9,7 +9,7 @@ close all;
 clear all; %#ok<CLSCR>
 clc;
 
-wSampleTimes=[0.1,0.05,0.01,0.009,0.005,0.001];
+wSampleTimes=[0.3,0.2,0.19,0.18,0.17,0.16,0.15,0.1];
 wSimulationTime=10;
 
 wAdamsBashforth = tf([3,-1],[2,-2,0]);
@@ -64,13 +64,13 @@ for i=1:length(wSampleTimes)
     for n = 0:wSimulationTime/wSampleTime-2
         
         if (n == 0)
-            x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1)); %#ok<*SAGROW>
-            x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(f2c(n+1));
-            x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(f3c(n+1));
+            x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(3*f1c(n+1)); %#ok<*SAGROW>
+            x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(3*f2c(n+1));
+            x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(3*f3c(n+1));
         else
-            x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(f1c(n+1)-f1c(n));
-            x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(f2c(n+1)-f2c(n));
-            x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(f3c(n+1)-f3c(n));
+            x1p(n+2) = x1c(n+1) + (wSampleTime/2)*(3*f1c(n+1)-f1c(n));
+            x2p(n+2) = x2c(n+1) + (wSampleTime/2)*(3*f2c(n+1)-f2c(n));
+            x3p(n+2) = x3c(n+1) + (wSampleTime/2)*(3*f3c(n+1)-f3c(n));
         end
         
         f1p(n+2) = x2p(n+2);
