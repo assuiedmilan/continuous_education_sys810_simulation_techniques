@@ -486,42 +486,63 @@ classdef Discretizer < handle
         function oHandle = mProcessRungeKuttaStabilityRegion(iThis,iTitle,iOrder,varargin)
             
             wMatlabIndexBias = 1;
-            wPonderingCoefficients = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05];
-            wStabilityPolynom = zeros(1,iOrder+1);
             
+                       
             wZvalues = (exp(1i*(0:0.01:2*pi)))';
-            wStabilityValues = zeros(iOrder*length(wZvalues),1);
-            wPlotData = zeros(length(wZvalues)*iOrder*length(wPonderingCoefficients),2);
             
             wPloter = Ploter([0 0 5 5],[5 5]);
             wPloter.mSetSaveAfterDraw(false);
-            for k=1:iOrder
-                if (not(isempty(varargin)) && k==iOrder)
-                    wStabilityPolynom(k+wMatlabIndexBias) = 1/varargin{1};
-                else
-                    wStabilityPolynom(k+wMatlabIndexBias) = 1/factorial(k);
+            
+            if(not(isempty(varargin)))
+                wStiffAdapterMatrix = varargin{1};
+                wNumberOfPlots = length(wStiffAdapterMatrix);
+                wPonderingCoefficients = [1,0.9];
+            else
+                if(exist('wStiffAdapterMatrix')) %#ok<EXIST>
+                    clear wStiffAdapterMatrix
                 end
+                wNumberOfPlots = 1;
+                wPonderingCoefficients = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05];
             end
             
-            %Correctly order coefficients for matlab
-            wStabilityPolynom = fliplr(wStabilityPolynom);
-            
-            for l = 1:length(wPonderingCoefficients)
-                for k = 1:length(wZvalues)
-                    
-                    wStabilityPolynom(iOrder+1) = 1-wPonderingCoefficients(l)*wZvalues(k);
-                    wRoots = roots(wStabilityPolynom);
-                    
-                    for h=0:iOrder-1
-                        wStabilityValues(iOrder*k-h,l) = wRoots(h+wMatlabIndexBias);
+            wPlotDataCell = cell(1,wNumberOfPlots);
+            for wCurrentPlot = 1:wNumberOfPlots
+                
+                clear wStabilityPolynom wStabilityValues wPlotData
+                wStabilityPolynom = zeros(1,iOrder+1);
+                wStabilityValues = zeros(iOrder*length(wZvalues),1);
+                wPlotData = zeros(length(wZvalues)*iOrder*length(wPonderingCoefficients),2);
+                            
+                for k=1:iOrder
+                    if (exist('wStiffAdapterMatrix') && k==iOrder)                         %#ok<EXIST>
+                        wStabilityPolynom(k+wMatlabIndexBias) = 1/wStiffAdapterMatrix(wCurrentPlot);
+                    else
+                        wStabilityPolynom(k+wMatlabIndexBias) = 1/factorial(k);
                     end
-                    
                 end
                 
-                wPlotData((l-1)*length(wZvalues)*iOrder + wMatlabIndexBias:l*length(wZvalues)*iOrder,1:2) = [real(wStabilityValues(:,l)),imag(wStabilityValues(:,l))];
+                %Correctly order coefficients for matlab
+                wStabilityPolynom = fliplr(wStabilityPolynom);
+                
+                for l = 1:length(wPonderingCoefficients)
+                    for k = 1:length(wZvalues)
+                        
+                        wStabilityPolynom(iOrder+1) = 1-wPonderingCoefficients(l)*wZvalues(k);
+                        wRoots = roots(wStabilityPolynom);
+                        
+                        for h=0:iOrder-1
+                            wStabilityValues(iOrder*k-h,l) = wRoots(h+wMatlabIndexBias);
+                        end
+                        
+                    end
+                    
+                    wPlotData((l-1)*length(wZvalues)*iOrder + wMatlabIndexBias:l*length(wZvalues)*iOrder,1:2) = [real(wStabilityValues(:,l)),imag(wStabilityValues(:,l))];
+                end
+                
+                wPlotDataCell{1,wCurrentPlot} = {wPlotData,'.'};
             end
             
-            oHandle = wPloter.mDrawStandardPlot({{wPlotData,'.'}}...
+            oHandle = wPloter.mDrawStandardPlot(wPlotDataCell...
                 ,'plot'...
                 ,['Stability Region Runge-Kutta order ',num2str(iOrder)]...
                 ,'Real axis'...
