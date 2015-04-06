@@ -18,9 +18,15 @@ classdef Discretizer < handle
         %Constructors
         function oInstance = Discretizer(iT, varargin)
             if nargin == 2
+                %Case where a TF is entered
                 oInstance.mContinuousTf = varargin{1};
             elseif nargin == 3
+                %Case where a NUM/DEN is entered
                 oInstance.mContinuousTf = tf(varargin{1},varargin{2});
+            elseif nargin == 5
+                %Case where a state matrix system is entered
+                [wNum,wDen] = ss2tf(varargin{1},varargin{2},varargin{3},varargin{4});  
+                oInstance.mContinuousTf = tf(wNum,wDen);                
             else
                 oInstance.mContinuousTf = 0;
                 h = errordlg('Invalid constructor');
@@ -448,7 +454,6 @@ classdef Discretizer < handle
 
         function mAddPolesToStabilityRegion(iThis,iFigureHandle,iPloter)
 
-            set(0,'currentfigure',iFigureHandle);
             wSystemPoles = iThis.mGetPoles('continuous');
             wSampleTime = iThis.mGetSampleTime();
             
@@ -489,30 +494,34 @@ classdef Discretizer < handle
         
         function oHandle = mProcessPredictorCorrectorStabilityRegion(iThis,iTitle,iTauPredictor,iRhoPredictor,iTauCorrector,iRhoCorrector)
             
-            wZvalues = (exp(1i*(0:.01:2*pi)))';            
+            wZvalues = [(exp(1i*(0:.01:2*pi)))',0.9*(exp(1i*(0:.01:2*pi)))'];            
             wPloter = Ploter([0 0 5 5],[5 5]);
             wPloter.mSetSaveAfterDraw(false);
             
             wBetaK = iTauCorrector(1);
             
-            wStabilityRoots = zeros(1,2*length(wZvalues));
-            for k=1:length(wZvalues)
+            wStabilityRoots = zeros(2*size(wZvalues,1),size(wZvalues,2));
+            for l=1:size(wZvalues,2)
+                for k=1:size(wZvalues,1)
                 
-                wP1 = -wBetaK * polyval(iTauPredictor,wZvalues(k));
-                wP2 = wBetaK * polyval(iRhoPredictor,wZvalues(k)) - polyval(iTauCorrector,wZvalues(k));
-                wP3 = polyval(iRhoCorrector,wZvalues(k));
+                wP1 = -wBetaK * polyval(iTauPredictor,wZvalues(k,l));
+                wP2 = wBetaK * polyval(iRhoPredictor,wZvalues(k,l)) - polyval(iTauCorrector,wZvalues(k,l));
+                wP3 = polyval(iRhoCorrector,wZvalues(k,l));
                 
                 wRoots = roots([wP1,wP2,wP3]);
-                wStabilityRoots(2*k-1) = wRoots(1);
-                wStabilityRoots(2*k) = wRoots(2);
+                wStabilityRoots(2*k-1,l) = wRoots(1);
+                wStabilityRoots(2*k,l) = wRoots(2);
                 
+                end
             end
             
-            oHandle= wPloter.mDrawStandardPlot({{[real(wStabilityRoots);imag(wStabilityRoots)],'.'}}...
+            oHandle= wPloter.mDrawStandardPlot({{[real(wStabilityRoots(:,1)),imag(wStabilityRoots(:,1))],'.'}...
+                ,{[real(wStabilityRoots(:,2)),imag(wStabilityRoots(:,2))],'.'}}...
                 ,'plot'...
                 ,['Stability Region ',iTitle,strrep(num2str(iThis.mGetSampleTime()*1000),'.',''),'ms']...
                 ,'Real axis'...
-                ,'Imaginary axis');
+                ,'Imaginary axis'...
+                ,{'z=e(i.wt)','z=0.9*e(i.wt)'});
             
             iThis.mAddPolesToStabilityRegion(oHandle,wPloter);
             
