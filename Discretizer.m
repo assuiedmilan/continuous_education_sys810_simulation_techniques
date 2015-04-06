@@ -12,7 +12,7 @@ classdef Discretizer < handle
         mQBoxer;
         
     end
-            
+    
     methods %Public
         
         %Constructors
@@ -25,8 +25,8 @@ classdef Discretizer < handle
                 oInstance.mContinuousTf = tf(varargin{1},varargin{2});
             elseif nargin == 5
                 %Case where a state matrix system is entered
-                [wNum,wDen] = ss2tf(varargin{1},varargin{2},varargin{3},varargin{4});  
-                oInstance.mContinuousTf = tf(wNum,wDen);                
+                [wNum,wDen] = ss2tf(varargin{1},varargin{2},varargin{3},varargin{4});
+                oInstance.mContinuousTf = tf(wNum,wDen);
             else
                 oInstance.mContinuousTf = 0;
                 h = errordlg('Invalid constructor');
@@ -165,23 +165,32 @@ classdef Discretizer < handle
         %Stability study
         function [oStabRegionHdl,oStabCircleHdl] = mComputeStabilityRegion(iThis,iTitle,varargin)
             
+            oStabRegionHdl = 0;
+            oStabCircleHdl = 0;
             
             if isempty(varargin)
-                h = errordlg('Error, this methods needs a transfer function in argument. Specify as a Tf object');
+                h = errordlg('Error, this methods needs specific arguments, enter either a Tf for a single integrator, two Tf for a predictor-corrector, or an double for a Runge-Kutta method.');
                 waitfor(h);
                 return;
             end
             
-            if(length(varargin) == 1)
+            if (length(varargin) == 1 && isa(varargin{1},'tf'))
                 
+                %Single integrator case
                 wIntegrator = Discretizer(1,varargin{:});
                 [wTauCoefficients,wLCoefficients] = wIntegrator.mGetDiscreteTf('continuous');
                 
                 oStabRegionHdl = iThis.mProcessStabilityRegion(iTitle,wTauCoefficients,wLCoefficients);
                 oStabCircleHdl = iThis.mProcessStabilityCircle(iTitle,wTauCoefficients,wLCoefficients);
                 
-            elseif(length(varargin) == 2)
+            elseif (length(varargin) == 1 && isa(varargin{1},'double'))
                 
+                %Runge-Kutta
+                oStabRegionHdl = iThis.mProcessRungeKuttaStabilityRegion(iTitle,varargin{1});
+                
+            elseif(length(varargin) == 2 && isa(varargin{1},'tf') && isa(varargin{2},'tf'))
+                
+                %Predictor corrector case
                 wPredictor = Discretizer(1,varargin{1});
                 wCorrector = Discretizer(1,varargin{2});
                 
@@ -190,7 +199,11 @@ classdef Discretizer < handle
                 
                 oStabRegionHdl = iThis.mProcessPredictorCorrectorStabilityRegion(iTitle,wTauPredictor,wRhoPredictor,wTauCorrector,wRhoCorrector);
                 oStabCircleHdl = 0;
-                                
+                
+            elseif(length(varargin) == 2 && isa(varargin{1},'double') && isa(varargin{2},'double'))
+                %Runge-Kutta with a specified stiffed adapter
+                oStabRegionHdl = iThis.mProcessRungeKuttaStabilityRegion(iTitle,varargin{1},varargin{2});
+                
             end
             
         end
@@ -451,9 +464,9 @@ classdef Discretizer < handle
             oOrder = length(oDen)-1;
             
         end
-
+        
         function mAddPolesToStabilityRegion(iThis,iFigureHandle,iPloter)
-
+            
             wSystemPoles = iThis.mGetPoles('continuous');
             wSampleTime = iThis.mGetSampleTime();
             
@@ -467,6 +480,90 @@ classdef Discretizer < handle
             end
             
             iPloter.mProcessSaveDraw(iFigureHandle);
+        end
+        
+        
+        function oHandle = mProcessRungeKuttaStabilityRegion(iThis,iTitle,iOrder,varargin)
+            
+            wMatlabIndexBias = 1;
+            wPonderingCoefficients = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05];
+            wStabilityPolynom = zeros(1,iOrder+1);
+            
+            wZvalues = (exp(1i*(0:0.01:2*pi)))';
+            wStabilityValues = zeros(iOrder*length(wZvalues),1);
+            wPlotData = zeros(length(wZvalues)*iOrder*length(wPonderingCoefficients),2);
+            
+            wPloter = Ploter([0 0 5 5],[5 5]);
+            wPloter.mSetSaveAfterDraw(false);
+            for k=1:iOrder
+                if (not(isempty(varargin)) && k==iOrder)
+                    wStabilityPolynom(k+wMatlabIndexBias) = 1/varargin{1};
+                else
+                    wStabilityPolynom(k+wMatlabIndexBias) = 1/factorial(k);
+                end
+            end
+            
+            %Correctly order coefficients for matlab
+            wStabilityPolynom = fliplr(wStabilityPolynom);
+            
+            for l = 1:length(wPonderingCoefficients)
+                for k = 1:length(wZvalues)
+                    
+                    wStabilityPolynom(iOrder+1) = 1-wPonderingCoefficients(l)*wZvalues(k);
+                    wRoots = roots(wStabilityPolynom);
+                    
+                    for h=0:iOrder-1
+                        wStabilityValues(iOrder*k-h,l) = wRoots(h+wMatlabIndexBias);
+                    end
+                    
+                end
+                
+                wPlotData((l-1)*length(wZvalues)*iOrder + wMatlabIndexBias:l*length(wZvalues)*iOrder,1:2) = [real(wStabilityValues(:,l)),imag(wStabilityValues(:,l))];
+            end
+            
+            oHandle = wPloter.mDrawStandardPlot({{wPlotData,'.'}}...
+                ,'plot'...
+                ,['Stability Region Runge-Kutta order ',num2str(iOrder)]...
+                ,'Real axis'...
+                ,'Imaginary axis'...
+                ,'Stability region');
+            
+            iThis.mAddPolesToStabilityRegion(oHandle,wPloter);
+        end
+        
+        function oHandle = mProcessPredictorCorrectorStabilityRegion(iThis,iTitle,iTauPredictor,iRhoPredictor,iTauCorrector,iRhoCorrector)
+            
+            wZvalues = [(exp(1i*(0:.01:2*pi)))',0.9*(exp(1i*(0:.01:2*pi)))'];
+            wPloter = Ploter([0 0 5 5],[5 5]);
+            wPloter.mSetSaveAfterDraw(false);
+            
+            wBetaK = iTauCorrector(1);
+            
+            wStabilityRoots = zeros(2*size(wZvalues,1),size(wZvalues,2));
+            for l=1:size(wZvalues,2)
+                for k=1:size(wZvalues,1)
+                    
+                    wP1 = -wBetaK * polyval(iTauPredictor,wZvalues(k,l));
+                    wP2 = wBetaK * polyval(iRhoPredictor,wZvalues(k,l)) - polyval(iTauCorrector,wZvalues(k,l));
+                    wP3 = polyval(iRhoCorrector,wZvalues(k,l));
+                    
+                    wRoots = roots([wP1,wP2,wP3]);
+                    wStabilityRoots(2*k-1,l) = wRoots(1);
+                    wStabilityRoots(2*k,l) = wRoots(2);
+                    
+                end
+            end
+            
+            oHandle= wPloter.mDrawStandardPlot({{[real(wStabilityRoots(:,1)),imag(wStabilityRoots(:,1))],'.'}...
+                ,{[real(wStabilityRoots(:,2)),imag(wStabilityRoots(:,2))],'.'}}...
+                ,'plot'...
+                ,['Stability Region ',iTitle,strrep(num2str(iThis.mGetSampleTime()*1000),'.',''),'ms']...
+                ,'Real axis'...
+                ,'Imaginary axis'...
+                ,{'z=e(i.wt)','z=0.9*e(i.wt)'});
+            
+            iThis.mAddPolesToStabilityRegion(oHandle,wPloter);
+            
         end
         
         function oHandle = mProcessStabilityRegion(iThis,iTitle,iTauCoefficients,iLCoefficients)
@@ -490,41 +587,6 @@ classdef Discretizer < handle
                 ,'Stability region');
             
             iThis.mAddPolesToStabilityRegion(oHandle,wPloter);
-        end
-        
-        function oHandle = mProcessPredictorCorrectorStabilityRegion(iThis,iTitle,iTauPredictor,iRhoPredictor,iTauCorrector,iRhoCorrector)
-            
-            wZvalues = [(exp(1i*(0:.01:2*pi)))',0.9*(exp(1i*(0:.01:2*pi)))'];            
-            wPloter = Ploter([0 0 5 5],[5 5]);
-            wPloter.mSetSaveAfterDraw(false);
-            
-            wBetaK = iTauCorrector(1);
-            
-            wStabilityRoots = zeros(2*size(wZvalues,1),size(wZvalues,2));
-            for l=1:size(wZvalues,2)
-                for k=1:size(wZvalues,1)
-                
-                wP1 = -wBetaK * polyval(iTauPredictor,wZvalues(k,l));
-                wP2 = wBetaK * polyval(iRhoPredictor,wZvalues(k,l)) - polyval(iTauCorrector,wZvalues(k,l));
-                wP3 = polyval(iRhoCorrector,wZvalues(k,l));
-                
-                wRoots = roots([wP1,wP2,wP3]);
-                wStabilityRoots(2*k-1,l) = wRoots(1);
-                wStabilityRoots(2*k,l) = wRoots(2);
-                
-                end
-            end
-            
-            oHandle= wPloter.mDrawStandardPlot({{[real(wStabilityRoots(:,1)),imag(wStabilityRoots(:,1))],'.'}...
-                ,{[real(wStabilityRoots(:,2)),imag(wStabilityRoots(:,2))],'.'}}...
-                ,'plot'...
-                ,['Stability Region ',iTitle,strrep(num2str(iThis.mGetSampleTime()*1000),'.',''),'ms']...
-                ,'Real axis'...
-                ,'Imaginary axis'...
-                ,{'z=e(i.wt)','z=0.9*e(i.wt)'});
-            
-            iThis.mAddPolesToStabilityRegion(oHandle,wPloter);
-            
         end
         
         function oHandle = mProcessStabilityCircle(iThis,iTitle,iTauCoefficients,iLCoefficients)
