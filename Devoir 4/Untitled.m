@@ -30,93 +30,18 @@ wSimulationTime = 5;
 wSystem = Discretizer(wSampleTime,...
     A,B,C,D);
 
+wRungeKuttaOrder = 3;
 % ************************************************************ %
 % *****************      RK3 STABILITY      ****************** %
 % ************************************************************ %
-
-wMatlabIndexBias = 1;
-wRungeKuttaOrder = 4;
-wPonderingCoefficients = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05];
-wStabilityPolynom = zeros(1,wRungeKuttaOrder+1);
-
-wZvalues = (exp(1i*(0:0.01:2*pi)))';
-wStabilityValues = zeros(wRungeKuttaOrder*length(wZvalues),1);
-wPlotData = zeros(length(wZvalues)*wRungeKuttaOrder*length(wPonderingCoefficients),2);
-
-for k=1:wRungeKuttaOrder
-    wStabilityPolynom(k+wMatlabIndexBias) = 1/factorial(k);
-end
-%Correctly order coefficients for matlab
-wStabilityPolynom = fliplr(wStabilityPolynom);
-
-for l = 1:length(wPonderingCoefficients)
-    for k = 1:length(wZvalues)
-
-        wStabilityPolynom(wRungeKuttaOrder+1) = 1-wPonderingCoefficients(l)*wZvalues(k);
-        wRoots = roots(wStabilityPolynom);
-
-        for h=0:wRungeKuttaOrder-1
-            wStabilityValues(wRungeKuttaOrder*k-h,l) = wRoots(h+wMatlabIndexBias);
-        end
-
-    end
-    
-    wPlotData((l-1)*length(wZvalues)*wRungeKuttaOrder + wMatlabIndexBias:l*length(wZvalues)*wRungeKuttaOrder,1:2) = [real(wStabilityValues(:,l)),imag(wStabilityValues(:,l))];
-end
-
-
- wPloter.mDrawStandardPlot({{wPlotData,'.'}}...
-    ,'plot'...
-    ,'Stability Region Runge-Kutta order 4'...
-    ,'Real axis'...
-    ,'Imaginary axis'...
-    ,'Stability region');
-
-
+wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder)],wRungeKuttaOrder);
 
 % ************************************************************ %
 % *************      RK3 STIFFED STABILITY      ************** %
 % ************************************************************ %
+wStiffAdapter = 12;
+wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder),' with stiff adapter =',num2str(wStiffAdapter)],wRungeKuttaOrder,wStiffAdapter);
 
-clear wStabilityPolynom wStabilityValues wPlotData
-wStabilityPolynom = zeros(1,wRungeKuttaOrder+1);
-wStabilityValues = zeros(wRungeKuttaOrder*length(wZvalues),1);
-wPlotData = zeros(length(wZvalues)*wRungeKuttaOrder*length(wPonderingCoefficients),2);
-
-g = 12;
-
-for k=1:wRungeKuttaOrder
-    if (k==wRungeKuttaOrder)
-        wStabilityPolynom(k+wMatlabIndexBias) = 1/g;
-    else
-        wStabilityPolynom(k+wMatlabIndexBias) = 1/factorial(k);
-    end
-end
-%Correctly order coefficients for matlab
-wStabilityPolynom = fliplr(wStabilityPolynom);
-
-for l = 1:length(wPonderingCoefficients)
-    for k = 1:length(wZvalues)
-
-        wStabilityPolynom(wRungeKuttaOrder+1) = 1-wPonderingCoefficients(l)*wZvalues(k);
-        wRoots = roots(wStabilityPolynom);
-
-        for h=0:wRungeKuttaOrder-1
-            wStabilityValues(wRungeKuttaOrder*k-h,l) = wRoots(h+wMatlabIndexBias);
-        end
-
-    end
-    
-    wPlotData((l-1)*length(wZvalues)*wRungeKuttaOrder + wMatlabIndexBias:l*length(wZvalues)*wRungeKuttaOrder,1:2) = [real(wStabilityValues(:,l)),imag(wStabilityValues(:,l))];
-end
-
-
-wPloter.mDrawStandardPlot({{wPlotData,'.'}}...
-    ,'plot'...
-    ,['Stability Region Runge-Kutta order 4 adapted for stiffed systems with g=',num2str(g)]...
-    ,'Real axis'...
-    ,'Imaginary axis'...
-    ,'Stability region');
 % ************************************************************ %
 % **********************  SIMULATION ************************* %
 % ************************************************************ %
@@ -144,7 +69,7 @@ wStiffnessRatio = max(abs(real(wSystem.mGetPoles('continuous'))))/min(abs(real(w
 % *****************      RK3 EQUATIONS      ****************** %
 % ************************************************************ %
 t=linspace(0,wSimulationTime,wSimulationTime*(1/wSampleTime));
-
+wMatlabIndexBias = 1;
 wNmax = wSimulationTime/wSampleTime-1;
 U=ones(1,wNmax);
 X = zeros(3,1);
