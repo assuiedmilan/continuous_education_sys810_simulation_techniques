@@ -1,0 +1,376 @@
+% SYS810 - Devoir 2.tex (Version 2.0)
+% ===============================================================================
+% ETS SYS810 Devoirs templates.
+% Based on ANUfinalexam.tex 2004; 2009, Timothy Kam, ANU School of Economics
+% Licence type: Free as defined in the GNU General Public Licence: http://www.gnu.org/licenses/gpl.html
+
+\documentclass[a4paper,12pt,fleqn]{article}
+\usepackage{amsmath}
+\usepackage{empheq}
+\usepackage{fancyhdr}
+\usepackage{epigraph}
+
+%Use of float barrier
+\usepackage[section]{placeins}
+%Use of left / right in include graphics
+\usepackage[export]{adjustbox}
+
+%To print pdf pages directly
+\usepackage{pdfpages}
+
+%Import of matlab files
+\usepackage[]{mcode}
+
+\usepackage[utf8]{inputenc} 
+
+% Insert your course information here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\institution}{École de Technologie Supérieure}
+\newcommand{\titlehd}{Techniques de simulation numériques}
+\newcommand{\examtype}{Devoir 2}
+\newcommand{\examdate}{19 février 2015}
+\newcommand{\examcode}{SYS810}
+\newcommand{\authors}{Milan Assuied}
+\newcommand{\lastwords}{Fin du devoir}
+
+% Insert recurent maths notations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\mean#1{\left< #1 \right>}
+
+% Common commands
+\newcommand{\T}{T_s}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\setcounter{MaxMatrixCols}{10}
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+
+% ANU Exams Office mandated margins and footer style
+\setlength{\topmargin}{0cm}
+\setlength{\textheight}{9.25in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{16cm}
+\pagestyle{fancy}
+\lhead{} 
+\chead{} 
+\rhead{} 
+\lfoot{} 
+\cfoot{\footnotesize{Page \thepage \ of \pageref{finalpage} -- \titlehd \ (\examcode)}} 
+\rfoot{} 
+
+\renewcommand{\headrulewidth}{0pt} %Do not print a rule below the header
+\renewcommand{\footrulewidth}{0pt}
+
+
+\begin{document}
+
+% Title page
+
+\begin{center}
+%\vspace{5cm}
+\large\textbf{\institution}
+\end{center}
+\vspace{1cm}
+
+\begin{center}
+\textit{ \examtype -- \examdate}
+\end{center}
+\vspace{1cm}
+
+\begin{center}
+\large\textbf{\titlehd}
+\end{center}
+
+\begin{center}
+\large\textbf{\examcode}
+\end{center}
+\begin{center}
+\large\textbf{\authors}
+\end{center}https://www.sharelatex.com/project/
+\vspace{4cm}
+
+% End title page
+
+
+\numberwithin{equation}{section}
+
+% START OF EXERCICE 1 %
+\newpage
+\section{\textbf{Problème 1}}
+\begin{enumerate}
+
+\item \underline{Représentation discrète de la commande d'hélicoptère:}
+
+ \underline{Note:}
+ La substitution de type Halijak présentée dans cet exercice présente une différence avec la référence fournie dans le cours.\\
+ Cette différence pourrait s'expliquer par une erreur dans les matrices de substitution, toutefois cette erreur est faible et les matrices ont été vérifiées.\\
+ Les résultats étant cohérents sont donc présentés tels quels. La source de l'écart restant non identifiée.
+ 
+Dans cet exercice, on représente la commande d'un rotor d'hélicoptère à l'aide de quatre modèles de simulation différents:
+
+\begin{itemize}
+  \item Modèle continu,
+  \item Modèle discrétisé par substitution de type Tutsin,
+  \item Modèle discrétisé par substitution de type Tutsin décalé par un retard pur, afin de rendre le système explicite,
+  \item Modèle discrétisé par substitution de type Halijak.
+\end{itemize}
+
+Les fonctions de transfert sont déterminées en utilisant les méthodes de la classe Discretizer. Le résultat suivant est obtenu et imprimé depuis la fenêtre de sortie MatLab.
+
+\includepdf[pages={1,2,3}]{"Helico-Model Transfer functions".pdf}
+
+\item \underline{Modèles utilisés pour la simulation:}
+
+Le modèle suivant est utilisé pour la simulation:
+
+\begin{figure}[htb]
+\centering
+    \includegraphics[angle=90,scale=.8, keepaspectratio=true,left]{"Helico-Model".pdf}
+    \caption{Modèle de simulation de commande d'Hélicoptère - Quatre représentations.}
+\end{figure}
+\FloatBarrier
+
+Le fait que Tustin soit une méthode implicite génère une boucle algébrique qui doit être brisée pour permettre le calcul. En effet une boucle algébrique revient à devoir connaître au même instant l'entrée et la sortie du système, ce qui n'est pas causal.
+Pour briser la boucle algébrique, il est rajouté un retard à la fonction de transfert discrète. Toutefois, cet ajout fausse la fonction qui représente le système et entraîne une erreur de précision.. 
+Nous verrons dans les résultats que SimuLink peut - être en mesure de résoudre les boucles algébriques grâce 
+des itérations successives dans la mesure ou celles-ci convergent.
+
+Afin de comparer les effets d'une fonction de transfert implicite contre cette même fonction retardée, on utilise deux sous-systèmes différents afin de réaliser une simulation en parallèle. Les sous-systèmes contenant les fonctions de transfert continues et discrétisées selon Halijak sont similaires et non représentés:
+
+\begin{figure}[htb]
+\centering
+    \includegraphics[scale=.5, keepaspectratio=true]{"Helico-Model Tutsin".pdf}
+    \caption{Sous-Système Tutsin}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[htb]
+\centering
+    \includegraphics[scale=.5, keepaspectratio=true]{"Helico-Model Tutsin delayed".pdf}
+    \caption{Sous-Système Tutsin}
+\end{figure}
+\FloatBarrier
+
+Note: Il aurait pu être utilisé la méthode de retard de la classe Discretizer pour ne pas avoir à modifier le sous-système en lui rajoutant un retard pur.
+
+\newpage
+\item \underline{Résultats:}
+
+On présente ici la réponse temporelle du système à une entrée de type échellon d'amplitude 0.1R.
+
+\begin{itemize}
+  \item Réponse temporelle
+\end{itemize}
+
+\begin{figure}[htb]
+\centering
+    \includegraphics[scale=1, keepaspectratio=true]{"Helico-Step Response".pdf}
+    \caption{Réponse temporelle}
+\end{figure}
+\FloatBarrier
+
+On constate qu'il y a peu de différence sur la réponse du système. Ces écarts sont précisés sur la figure suivante:
+
+\newpage
+\begin{itemize}
+  \item Écart par rapport au modèle continu:
+\end{itemize}
+
+\begin{figure}[htb]
+\centering
+    \includegraphics[scale=1, keepaspectratio=true]{"Helico-Errors".pdf}
+    \caption{Écarts entre modèle continu et modèles discret}
+\end{figure}
+\FloatBarrier
+
+Il est ici intéressant de constater que la fonction de transfert implicite fournit le meilleur résultat.
+
+Ceci n'est réalisable que parce que Simulink est en mesure de résoudre la boucle algébrique, au prix de performances de simulation dégradées. Il est important de noter que cette résolution n'est pas offerte par tous les logiciels, qu'elle n'est pas garantie par Simulink, et qu'elle doit être comparée aux résultats fournis par des systèmes causaux afin de garantir son exactitude.
+
+\begin{figure}[htb]
+\centering
+    \includegraphics[scale=1, keepaspectratio=true]{"Helico-Difference between tutsin implicit and explicit".pdf}
+    \caption{Écarts entre Tutsin et Tutsin retardé}
+\end{figure}
+\FloatBarrier
+
+Finalement, on présente la commande appliquée en entrée du système. Le système étant en boucle fermée, il s'agit de l'erreur entre l'entrée et sortie qui doit être annulée.
+
+\begin{figure}[htb]
+\centering
+    \includegraphics[scale=1, keepaspectratio=true]{"Helico-Commands".pdf}
+    \caption{Signal de commande}
+\end{figure}
+\FloatBarrier
+
+\end{enumerate}
+
+% START OF EXERCICE 2 %
+\pagebreak[4]
+\newpage
+\section{\textbf{Problème 2}}
+Discrétistation suivant plusieurs méthodes
+\begin{enumerate}
+\item \underline{Représentation discrète d'une fonction de transfert:}\\
+Pour cet exercice, nous utilisons de nouveau la classe Discretizer. Cette classe instanciée à partir d'une fonction de transfert continue permet d'accéder aux fonctions de transfert discrètes du type suivant:
+
+\begin{itemize}
+  \item Bloqueur d'ordre 0,
+  \item Tutsin
+  \item Halijak jusqu'à l'ordre 5
+  \item Boxer-Thalor jusqu'à l'ordre 5
+\end{itemize}
+
+Les fonctions de transfert sont déterminées en utilisant les méthodes de la classe Discretizer. Le résultat suivant est obtenu et imprimé depuis la fenêtre de sortie MatLab.
+
+\includepdf[pages={1}]{"ZTransform-Model Transfer functions".pdf}
+
+De plus, Discretizer permet d'exécuter l'équation récurrente associée à l'un des types de discrétisation.
+
+Pour valider nos équations, nous traçons les courbes suivantes associées à chaque technique:
+
+\begin{itemize}
+  \item Courbe issue d l'équation récurente
+  \item Courbe issue d'un modèle simulink éxécutant la fonction de transfert discrètisée
+  \item Courbe issue d'un modèle simulink exécutant la fonction de transfert continue
+\end{itemize}
+
+\item \underline{Étude de stabilité:}
+
+Avant de tracer les réponses impulsionnelles, nous étudions la stabilité du système en traçant son diagramme de Nyquist ainsi que le digramme Pôles-Zéros des fonctions de transfert dicrètisées:
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform Nyquist".pdf}
+	\caption{Diagramme de Nyquist}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform Poles-Zeros discretes".pdf}
+	\caption{Pôles - Zéros discrets}
+\end{figure}
+\FloatBarrier
+
+Le point (-1) étant laissé à gauche du diagramme de Nyquist, on en déduit que le système est stable en boucle fermée.\\
+De même, les pôles de chacune des représentations discrètes du système étant situés dans le cercle de rayon (1), on en déduit que chacune de ces représentation est stable.
+On note toutefois que l'un des pôles de la fonction obtenue par Halijak présente un éloignement sensible des pôles obtenus via les autres représentations, ce qui devrait se traduire sur les résultats.
+
+\item \underline{Résultats:}
+
+\pagebreak[4]
+\underline{Bloqueur d'ordre 0}
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform ZoH".pdf}
+	\caption{Courbes associées au Bloqueur d'Ordre Zero}
+\end{figure}
+
+\pagebreak[4]
+\underline{Tutsin}
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform Tutsin".pdf}
+	\caption{Courbes associées à Tutsin}
+\end{figure}
+
+\pagebreak[4]
+
+\pagebreak[4]
+\underline{Halijak}
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform Halijak".pdf}
+	\caption{Courbes associées à Halijak}
+\end{figure}
+
+Note: Comme attendu, ce modèle est convergent mais sa précision est incorrecte.
+Contrairement à Tutsin, qui est la méthode implicite à 1-pas la plus précise, Halijak présente une erreur d'ordre 1.\\
+Une solution est de diminuer la période d'échantillonnage pour obtenir une meilleure précision, tout en essayant de rester stable.
+
+Nous divisons la période d'échantillonnage par 10 et traçons le diagramme Pôles-Zéros:
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform Poles-Zeros discretes_smallT".pdf}
+	\caption{Diagramme Pôle-Zéro avec T = 0.01s}
+\end{figure}
+
+Ce diagramme confirme que la fonction de transfert est toujours stable, on peut alors simuler le système.
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform Halijak_smallT".pdf}
+	\caption{Courbes associées à Halijak avec T = 0.01s}
+\end{figure}
+\FloatBarrier
+
+\pagebreak[4]
+\item \underline{Boxer-Thaler}
+
+\begin{figure}[htb]
+  \centering      
+    \includegraphics[scale=.78, keepaspectratio=true]{"ZTransform Boxer-Thalor".pdf}
+	\caption{Courbes associées à Boxer-Thaler}
+\end{figure}
+
+\end{enumerate}
+
+% ANNEXES %
+\pagebreak[4]
+\begin{center}
+\section*{\textbf{ANNEXES: Code Matlab}}
+\end{center}
+
+\begin{enumerate}
+\item \underline{Exercice1 : Code d'exécution}
+
+\lstinputlisting{HelicoDataDictionnary.m}
+
+\newpage
+\item \underline{Exercice2 : Code d'exécution}
+
+\lstinputlisting{ZTransformDataDictionnary.m}
+
+\newpage
+\item \underline{Général : Discretizer}
+
+\lstinputlisting{Discretizer.m}
+
+\end{enumerate}
+
+
+\begin{center}
+\vspace{3cm}
+--------- \textit{\lastwords} ---------
+\end{center}
+
+
+\label{finalpage}
+
+\end{document}
