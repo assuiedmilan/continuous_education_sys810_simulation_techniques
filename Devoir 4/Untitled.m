@@ -39,7 +39,7 @@ wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder)]
 % ************************************************************ %
 % *************      RK3 STIFFED STABILITY      ************** %
 % ************************************************************ %
-wStiffAdapter = 12;
+wStiffAdapter = [3,5,7,9,11,13];
 wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder),' with stiff adapter =',num2str(wStiffAdapter)],wRungeKuttaOrder,wStiffAdapter);
 
 % ************************************************************ %
