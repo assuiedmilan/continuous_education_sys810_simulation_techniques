@@ -64,7 +64,7 @@ fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
 wStiffnessRatio = max(abs(real(wSystem.mGetPoles('continuous'))))/min(abs(real(wSystem.mGetPoles('continuous'))));
 
 % ************************************************************ %
-% ********************      RK3 SRP      ********************* %
+% *****************     RK3 DISCRETE POLES  ****************** %
 % ************************************************************ %
 
 % ************************************************************ %
