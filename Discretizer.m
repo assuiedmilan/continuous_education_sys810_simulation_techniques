@@ -496,13 +496,13 @@ classdef Discretizer < handle
             if(not(isempty(varargin)))
                 wStiffAdapterMatrix = varargin{1};
                 wNumberOfPlots = length(wStiffAdapterMatrix);
-                wPonderingCoefficients = [1,0.9];
+                wPonderingCoefficients = [1];
             else
                 if(exist('wStiffAdapterMatrix')) %#ok<EXIST>
                     clear wStiffAdapterMatrix
                 end
                 wNumberOfPlots = 1;
-                wPonderingCoefficients = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05];
+                wPonderingCoefficients = [1];
             end
             
             wPlotDataCell = cell(1,wNumberOfPlots);
