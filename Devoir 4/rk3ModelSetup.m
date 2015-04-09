@@ -24,10 +24,3 @@ set_param(wContBlock,'A','A','B','B','C','C','D','D','X0','X0');
 set_param(model, 'StopTime', 'wSimulationTime');
 
 set_param(model, 'MaxStep', 'wMaxStep');
-
-
-%Saving Model
-wPloter.mProcessSaveModel(model);
-
-
-
