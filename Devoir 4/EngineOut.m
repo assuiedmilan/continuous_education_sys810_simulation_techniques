@@ -35,6 +35,39 @@ wSystem = Discretizer(1,A,B,C,D);
 % ************************************************************ %
 wStiffnessRatio = max(abs(real(wSystem.mGetPoles('continuous'))))/min(abs(real(wSystem.mGetPoles('continuous'))));
 
+% ************************************************************ %
+% *****************     RK3 DISCRETE POLES  ****************** %
+% ************************************************************ %
+wSampleTimesVector = 0.01:0.01:0.4;
+wL = min(abs(wSystem.mGetPoles('continuous')));
+
+zExact  = zeros(1,length(wSampleTimesVector));
+zRk3    = zeros(1,length(wSampleTimesVector));
+zRk3p2  = zeros(1,length(wSampleTimesVector));
+
+for g=1:length(wStiffAdapters)
+    
+for k=1:length(wSampleTimesVector)
+    
+    wLT = wL*wSampleTimesVector(k);
+    
+    zExact(k)  = abs(exp(wLT));
+    zRk3(k)    = abs(1+wLT+1/2*wLT^2+1/6*wLT^3);
+    zRk3p2(k)  = abs(1+wLT+1/2*wLT^2+1/wStiffAdapters(g)*wLT^3);
+    
+end
+
+wPloter.mDrawStandardPlot({{[wSampleTimesVector;zExact],'.'}...
+    ,{[wSampleTimesVector;zRk3],'*'}...
+    ,{[wSampleTimesVector;zRk3p2],'o'}}...
+    ,'plot'...
+    ,['RK3 pole vs fastest exact pole with g= ',num2str(wStiffAdapters(g))]...
+    ,'Sample time (s)'...
+    ,'|z|'...
+    ,{'Exact pole';'RK3 pole';'RK3 precision 2 pole'});
+
+end
+
 %Stabilité à partir de 20ms
 %Précision à partir de 10ms
 for wSampleTimeIndex = 1:length(wSampleTimes)
@@ -44,10 +77,10 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     
     clearvars -except wSampleTimes wStiffAdapters wIdealSimulationTime...
         wRungeKuttaOrder wSystem wPloter wSampleTimeIndex A B C D X0
-        
+    
     wSampleTime = wSampleTimes(wSampleTimeIndex)
     wSimulationTime = ceil(wIdealSimulationTime/wSampleTime)*wSampleTime;
-    wSystem.mSetSampleTime(wSampleTime);    
+    wSystem.mSetSampleTime(wSampleTime);
     
     wSampleTimeLegend = [' ',strrep(num2str(wSampleTime*1000),'.',''),'ms'];
     
@@ -64,7 +97,7 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     
     t_sim = toc;
     fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
-
+    
     % ************************************************************ %
     % *****************      RK3 STABILITY      ****************** %
     % ************************************************************ %
@@ -74,37 +107,6 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     % *************      RK3 STIFFED STABILITY      ************** %
     % ************************************************************ %
     wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder),' precision ',num2str(wRungeKuttaOrder-1),wSampleTimeLegend],wRungeKuttaOrder,wStiffAdapters);
-    
-    % ************************************************************ %
-    % *****************     RK3 DISCRETE POLES  ****************** %
-    % ************************************************************ %    
-    zExact  = zeros(1,length(wSampleTimes));
-    zRk3    = zeros(1,length(wSampleTimes));
-    zRk3p2  = zeros(1,length(wSampleTimes));
-    
-    for k=1:length(wSampleTimes)
-        
-        wSystem.mSetSampleTime(wSampleTimes(k));
-        wLs = abs(wSystem.mGetPoles('continuous'));
-        wTs = wSystem.mGetSampleTime();
-        
-        for i=1:length(wLs)
-            wLT = wLs(i)*wTs;
-            zExact(k)  = abs(exp(wLT));
-            zRk3(k)    = abs(1+wLT+1/2*wLT^2+1/6*wLT^3);
-            zRk3p2(k)  = abs(1+wLT+1/2*wLT^2+1/9*wLT^3);
-        end        
-        
-    end
-    
-    wPloter.mDrawStandardPlot({{[wSampleTimes;zExact],'.'}...
-        ,{[wSampleTimes;zRk3],'*'}...
-        ,{[wSampleTimes;zRk3p2],'o'}}...
-        ,'plot'...
-        ,['RK3 poles',wSampleTimeLegend]...
-        ,'Sample time (s)'...
-        ,'|z|'...
-        ,{'Exact pole';'RK3 pole';'RK3 precision 2 pole'});
     
     % ************************************************************ %
     % *****************      RK3 EQUATIONS      ****************** %
@@ -142,8 +144,27 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
         ,'Step Response'...
         ,{'ODE3';'RK3 Recursive equations'});
 
+    wPloter.mDrawStandardPlot({[SimOutput.Continuous_signal.Time...
+        ,SimOutput.Continuous_signal.Data]}...
+        ,'stairs'...
+        ,['ODE3',wSampleTimeLegend]...
+        ,'Time (s)'...
+        ,'Step Response'...
+        ,{'ODE3'});   
+    
+        wPloter.mDrawStandardPlot({[t;C*X]}...
+        ,'stairs'...
+        ,['RK3 ',wSampleTimeLegend]...
+        ,'Time (s)'...
+        ,'Step Response'...
+        ,{'RK3 Recursive equations'});
     close all;
 end
+
+%Saving Model
+wPloter.mProcessSaveModel(model);
+
+
 % ************************************************************ %
 % *****************      SRP EQUATIONS      ****************** %
 % ************************************************************ %
