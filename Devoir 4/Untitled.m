@@ -66,6 +66,35 @@ wStiffnessRatio = max(abs(real(wSystem.mGetPoles('continuous'))))/min(abs(real(w
 % ************************************************************ %
 % *****************     RK3 DISCRETE POLES  ****************** %
 % ************************************************************ %
+wSampleTimes = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.001]
+zExact = zeros(1,length(wSampleTimes));
+zRk3 = zeros(1,length(wSampleTimes));
+zRk3p2 = zeros(1,length(wSampleTimes));
+
+for k=1:length(wSampleTimes)
+    
+wSystem.mSetSampleTime(wSampleTimes(k));
+wLs = abs(wSystem.mGetPoles('continuous'));
+wTs = wSystem.mGetSampleTime();
+    
+    for i=1:length(wLs)
+    wLT = wLs(i)*wTs;
+    zExact(k)  = abs(exp(wLT));
+    zRk3(k)    = abs(1+wLT+1/2*wLT^2+1/6*wLT^3);
+    zRk3p2(k)  = abs(1+wLT+1/2*wLT^2+1/9*wLT^3);
+    end    
+    
+    
+end
+
+wPloter.mDrawStandardPlot({{[wSampleTimes;zExact],'.'}...
+    ,{[wSampleTimes;zRk3],'*'}...
+    ,{[wSampleTimes;zRk3p2],'o'}}...
+    ,'plot'...
+    ,'RK3 poles'...
+    ,'Sample time (s)'...
+    ,'|z|'...
+    ,{'Exact pole';'RK3 pole';'RK3 precision 2 pole'});
 
 % ************************************************************ %
 % *****************      RK3 EQUATIONS      ****************** %
