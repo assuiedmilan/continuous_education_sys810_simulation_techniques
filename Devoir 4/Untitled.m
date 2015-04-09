@@ -101,7 +101,7 @@ wPloter.mDrawStandardPlot({{[wSampleTimes;zExact],'.'}...
 % ************************************************************ %
 t=linspace(0,wSimulationTime,wSimulationTime*(1/wSampleTime));
 wMatlabIndexBias = 1;
-wNmax = wSimulationTime/wSampleTime-1;
+wNmax = fix(wSimulationTime/wSampleTime)-1;
 U=ones(1,wNmax);
 X = zeros(3,1);
 X(:,1) = X0;
