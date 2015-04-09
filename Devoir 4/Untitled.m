@@ -24,9 +24,11 @@ C = [1,0,0];
 D = 0;
 X0 = [-0.5; 0.7; -0.5];
 
-wSampleTime = 0.001;
-wSimulationTime = 5;
+wSampleTime = 0.020;
+wSimulationTime = 10;
 
+%Stabilité à partir de 20ms
+%Précision à partir de 10ms
 wSystem = Discretizer(wSampleTime,...
     A,B,C,D);
 
@@ -39,7 +41,7 @@ wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder)]
 % ************************************************************ %
 % *************      RK3 STIFFED STABILITY      ************** %
 % ************************************************************ %
-wStiffAdapter = [3,5,7,9,11,13];
+wStiffAdapter = [6,12];
 wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder),' with stiff adapter =',num2str(wStiffAdapter)],wRungeKuttaOrder,wStiffAdapter);
 
 % ************************************************************ %
