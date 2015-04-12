@@ -13,23 +13,33 @@ oX(:,1) = iX0;
 for n = 0:iNmax-2
     
     wK(:,1)  = wA*oX(:,n+wMatlabIndexBias) + wB*iInput(n+wMatlabIndexBias);
-        
-    wXp(:,1) = oX(:,n+wMatlabIndexBias) + iSampleTime*(sum(iBrs(1,1:1).*wK(1:1)));    
+    
+    wSumK = zeros(3,1);
+    for h=1:1
+        wSumK(:,h) = iBrs(1,h).*wK(:,h);
+    end
+    
+    wXp(:,1) = oX(:,n+wMatlabIndexBias) + iSampleTime*(sum(wSumK,2));
     wUp(:,1) = iInput(n+wMatlabIndexBias);
     
     wK(:,2)  = wA*wXp(:,1) + wB*wUp(:,1);
-
-    wXp(:,2) = oX(:,n+wMatlabIndexBias) + iSampleTime*(sum(iBrs(2,1:2).*wK(1:2)));
+    
+    wSumK = zeros(3,1);
+    for h=1:2
+        wSumK(:,h) = iBrs(2,h).*wK(:,h);
+    end
+    
+    wXp(:,2) = oX(:,n+wMatlabIndexBias) + iSampleTime*(sum(wSumK,2));
     wUp(:,2) = iInput(n+wMatlabIndexBias);
     
     wK(:,3) = wA*wXp(:,2) + wB*wUp(:,2);
     
-    wKsum = zeros(size(wK,1),1);
-    for h=1:size(wK,1)
-        wKsum(h,1) = sum(iCr(:).*wK(:,h));
+    wSumK = zeros(3,1);
+    for h=1:3
+        wSumK(h) = wK(h,:)*iCr(:);
     end
     
-    oX(:,n+wMatlabIndexBias+1) = oX(:,n+wMatlabIndexBias) + 1/sum(iCr)*iSampleTime.*wKsum;
+    oX(:,n+wMatlabIndexBias+1) = oX(:,n+wMatlabIndexBias) + iSampleTime*(wSumK);
     
 end
 
