@@ -97,7 +97,7 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     
     t_sim = toc;
     fprintf('\nTemps de simulation => %3.3g s\n',t_sim)
-    break;
+    
     % ************************************************************ %
     % *****************      RK3 STABILITY      ****************** %
     % ************************************************************ %
@@ -112,15 +112,18 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     % *****************      RK3 EQUATIONS      ****************** %
     % ************************************************************ %
     
-    wMatlabIndexBias = 1;    
-    
-    for h=1:length(wStiffAdapters)
+    for h=1:1
         g = wStiffAdapters(h); %g=9 => stable at 40ms, precise at 0.15 ?
         
-        %Huen's
-        wNmax = fix(iSimulationTime/iSampleTime)-1;
-        [oX,oY,oT] = RK3([1,0,3], [1/3,0;0,2/3], X0, ones(1,wNmax), {A,B,C,D}, wNmax, wSampleTime)
-
+        %Kutta's third-order method
+        %0   |  0   0   0
+        %1/2 |  1/2 0   0
+        %1   | -1   2   0
+        %------------------
+        %    | 1/6  2/3 1/6
+        wNmax = fix(wSimulationTime/wSampleTime)-1;
+        [oX,oY,oT] = RK3([1/6,2/3,1/6], [1/2,0;-1,2], X0, ones(1,wNmax), {A,B,C,D}, wNmax, wSampleTime);
+        
         wPloter.mDrawStandardPlot({[SimOutput.Continuous_signal.Time...
             ,SimOutput.Continuous_signal.Data]...
             ,[oT;oY]}...
@@ -151,33 +154,3 @@ end
 %Saving Model
 wPloter.mProcessSaveModel(model);
 
-
-% ************************************************************ %
-% *****************      SRP EQUATIONS      ****************** %
-% ************************************************************ %
-% wL = max(abs(wSystem.mGetPoles('continuous')));
-% wT = wSystem.mGetSampleTime();
-%
-% E = [1 1 1 0 0 0;...
-%     0 1 2 -1 -1 -1;...
-%     0 1/2 2 0 -1 -2;...
-%     1 0 0 -wL*wT 0 0;...
-%     0 1 0 0 -wL*wT 0;...
-%     0 0 1 0 0 -wL*wT];
-%
-% C = [-1;-3;-9/2;0;0;-exp(wL*wT)];
-%
-% X = linsolve(E,C);
-%
-% dbstop if error
-% wIntegrator = tf([0,X(length(X)/2+1:length(X))'],[1,X(1:length(X)/2)']);
-% wSystem.mComputeStabilityRegion('SRP',wIntegrator);
-%
-% t=0:.01:2*pi;
-% k=1;
-% z=(k'*exp(i*t))';
-%
-% srp110 = (z.^3+X(3)*z.^2+X(2)*z+X(1))./(X(6)*z.^2+X(5)*z+X(4));
-% figure()
-% plot(real(srp110),imag(srp110),'b')
-%
