@@ -42,7 +42,7 @@ classdef RK3 < handle
                         wSumBrsPerKs(:) = wSumBrsPerKs(:) + wBrs(wRank,h).*wK(:,h);
                     end
                     
-                    wXp(:,wRank) = oX(:,n+wMatlabIndexBias) + iSampleTime*wAr(wRank)*(wSumBrsPerKs);
+                    wXp(:,wRank) = oX(:,n+wMatlabIndexBias) + iSampleTime*(wSumBrsPerKs);
                     wUp(:,wRank) = iInput(n+wMatlabIndexBias);
                     wK(:,wRank)  = wA*wXp(:,wRank) + wB*wUp(:,wRank);
                     
