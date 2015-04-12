@@ -28,7 +28,7 @@ for n = 0:iNmax-2
         wSumK = zeros(wRKNumberOfIterations,1);
         
         for h=1:wRank-1
-            wSumK(:) = wSumK(:) + wBrs(wRank,h).*wK(:,h)
+            wSumK(:) = wSumK(:) + wBrs(wRank,h).*wK(:,h);
         end
         
         wXp(:,wRank) = oX(:,n+wMatlabIndexBias) + iSampleTime*(wSumK);
