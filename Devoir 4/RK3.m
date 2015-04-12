@@ -10,32 +10,35 @@ wD = iSystem{4};
 oX = zeros(3,1);
 oX(:,1) = iX0;
 
+%Adding first rank of zeros for Brs coefficients if not already specified
+%by user
+if (all(iBrs(1,:)==0))
+    wBrs = iBrs;
+else
+    wBrs = [zeros(1,size(iBrs,1));iBrs];
+end
+
+wRKNumberOfIterations = length(iCr);
 for n = 0:iNmax-2
     
-    wK(:,1)  = wA*oX(:,n+wMatlabIndexBias) + wB*iInput(n+wMatlabIndexBias);
+    wK = zeros(wRKNumberOfIterations);
     
-    wSumK = zeros(3,1);
-    for h=1:1
-        wSumK(:,h) = iBrs(1,h).*wK(:,h);
+    for wRank=1:wRKNumberOfIterations
+        
+        wSumK = zeros(wRKNumberOfIterations,1);
+        
+        for h=1:wRank-1
+            wSumK(:) = wSumK(:) + wBrs(wRank,h).*wK(:,h)
+        end
+        
+        wXp(:,wRank) = oX(:,n+wMatlabIndexBias) + iSampleTime*(wSumK);
+        wUp(:,wRank) = iInput(n+wMatlabIndexBias);
+        wK(:,wRank)  = wA*wXp(:,wRank) + wB*wUp(:,wRank);
+        
     end
     
-    wXp(:,1) = oX(:,n+wMatlabIndexBias) + iSampleTime*(sum(wSumK,2));
-    wUp(:,1) = iInput(n+wMatlabIndexBias);
-    
-    wK(:,2)  = wA*wXp(:,1) + wB*wUp(:,1);
-    
-    wSumK = zeros(3,1);
-    for h=1:2
-        wSumK(:,h) = iBrs(2,h).*wK(:,h);
-    end
-    
-    wXp(:,2) = oX(:,n+wMatlabIndexBias) + iSampleTime*(sum(wSumK,2));
-    wUp(:,2) = iInput(n+wMatlabIndexBias);
-    
-    wK(:,3) = wA*wXp(:,2) + wB*wUp(:,2);
-    
-    wSumK = zeros(3,1);
-    for h=1:3
+    wSumK = zeros(wRKNumberOfIterations,1);
+    for h=1:wRKNumberOfIterations
         wSumK(h) = wK(h,:)*iCr(:);
     end
     
