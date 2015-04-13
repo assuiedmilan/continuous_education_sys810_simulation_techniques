@@ -2,14 +2,9 @@ classdef RK3 < handle
     
     methods(Static)
         
-        function [ oX, oY, oT ] = sProcessRungeKutta(iCr, iBrs, iX0, iInput, iSystem, iNmax, iSampleTime)
+        function [ oX,  oT ] = sProcessRungeKutta(iCr, iBrs, iX0, iInput, iSystem, iNmax, iSampleTime, iDXhandle)
             
             wMatlabIndexBias = 1;
-            
-            wA = iSystem{1};
-            wB = iSystem{2};
-            wC = iSystem{3};
-            wD = iSystem{4};
             
             %Adding first rank of zeros for Brs coefficients if not already specified
             %by user
@@ -25,10 +20,10 @@ classdef RK3 < handle
             %Initialize
             wRKNumberOfIterations = length(iCr);
             
-            wXp = zeros(wRKNumberOfIterations);
-            wUp = zeros(1,wRKNumberOfIterations);
             oX = zeros(3,iNmax);
+            oT = zeros(1,iNmax);
             oX(:,1) = iX0;
+            oT(1) = 0;
             
             for n = 0:iNmax-2
                 
@@ -42,9 +37,7 @@ classdef RK3 < handle
                         wSumBrsPerKs(:) = wSumBrsPerKs(:) + wBrs(wRank,h).*wK(:,h);
                     end
                     
-                    wXp(:,wRank) = oX(:,n+wMatlabIndexBias) + iSampleTime*(wSumBrsPerKs);
-                    wUp(:,wRank) = iInput(n+wMatlabIndexBias);
-                    wK(:,wRank)  = wA*wXp(:,wRank) + wB*wUp(:,wRank);
+                    wK(:,wRank)  = iDXhandle(iSampleTime*(n + wAr), oX(:,n+wMatlabIndexBias) + iSampleTime*(wSumBrsPerKs), iInput(n+wMatlabIndexBias));
                     
                 end
                 
@@ -54,12 +47,9 @@ classdef RK3 < handle
                 end
                 
                 oX(:,n+wMatlabIndexBias+1) = oX(:,n+wMatlabIndexBias) + iSampleTime*(wSumCrPerKr);
+                oT(n+wMatlabIndexBias+1) = (n+1)*iSampleTime;
                 
             end
-            
-            oY = wC*oX + wD*iInput;
-            
-            oT=linspace(0,iNmax*iSampleTime,iNmax);
             
         end
         
