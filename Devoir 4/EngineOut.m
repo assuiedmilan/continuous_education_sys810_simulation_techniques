@@ -29,8 +29,8 @@ dX = @(t,X,U) A*X+B*U;
 
 X0 = [-0.5; 0.7; -0.5];
 
-wSampleTimes = [0.05,0.04,0.03,0.02,0.015,0.01,0.005,0.001];
-wStiffAdapters = [6,9,12,15];
+wSampleTimes = [0.04,0.03,0.02,0.015,0.01,0.005];
+wStiffAdapters = [6,9,12];
 wIdealSimulationTime = 5;
 wRungeKuttaOrder = 3;
 wSystem = Discretizer(1,A,B,C,D);
