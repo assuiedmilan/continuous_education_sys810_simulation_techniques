@@ -2,16 +2,16 @@ classdef RK3 < handle
     
     methods(Static)
         
-        function [ oX,  oT ] = sProcessRungeKutta(iCr, iBrs, iX0, iInput, iSystem, iNmax, iSampleTime, iDXhandle)
+        function [ oX,  oT ] = sProcessRungeKutta(iCr, iBr, iX0, iInput, iSystem, iNmax, iSampleTime, iDXhandle)
             
             wMatlabIndexBias = 1;
             
             %Adding first rank of zeros for Brs coefficients if not already specified
             %by user
-            if (all(iBrs(1,:)==0))
-                wBrs = iBrs;
+            if (all(iBr(1,:)==0))
+                wBrs = iBr;
             else
-                wBrs = [zeros(1,size(iBrs,1));iBrs];
+                wBrs = [zeros(1,size(iBr,1));iBr];
             end
             
             %Computing A(r)
@@ -53,43 +53,32 @@ classdef RK3 < handle
             
         end
         
-        function oHandle = sAddButcherTable(iHandle,iCr, iBrs)
+        function oCr = sComputeCrOrder3(iCr3,iBr,varargin)
             
-            set(0, 'currentfigure', iHandle);
-            hold all;
-            subplot(2,1,1);
-            
-            %Adding first rank of zeros for Brs coefficients if not already specified
-            %by user
-            if (all(iBrs(1,:)==0))
-                wBrs = iBrs;
+            if(isempty(varargin))
+                %Precision 3 Kutta's method
+                g = 6;
             else
-                wBrs = [zeros(1,size(iBrs,1));iBrs];
+                %Precision 2 Kutta's method
+                g = varargin{1};
             end
-            %Add one last column of not significants zeros for above last
-            %Cr            
-            wBrs = [wBrs,zeros(size(wBrs,1),1)];
             
-            %Adding one not significant 0 to Crs
-            wCrs = [0,iCr];
+            %Kutta's third-order precision 2 method: g=6 => precision 3 Kutta's method
+            %0  |  0         0                        0
+            %a2 |  b21       0                        0
+            %a3 |  b31       b32                      0
+            %------------------------------------------------------
+            %    | [1-c2-c3]  [1/a2 * (1/2 - c3*a2)] [1/g *c3]
             
-            %Computing A(r)
-            wAr = sum(wBrs,2);
+            wAr = sum(iBr,2);
             
-            wData = [wAr,wBrs];
-            wData = [wData;wCrs];
+            wC3  = 6/g*iCr3;
+            wC2  = 1/wAr(1) * (1/2 - wC3*wAr(2));
+            wC1  = 1 - wC2 - wC3;
             
-            wLineName = cell(length(wAr)+1,1);
-            wLineName{length(wAr)+1} = 'Cr';
-
-            uitable('Data', wData, 'ColumnName', {'Ar', 'Brs'}, 'RowName', wLineName, 'Position', [20 20 500 150]);
-                       
+            oCr = [wC1,wC2,wC3];
             
-            oHandle = iHandle;
-            
-                        
         end
-        
     end
     
 end
