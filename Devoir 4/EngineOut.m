@@ -29,9 +29,9 @@ dX = @(t,X,U) A*X+B*U;
 
 X0 = [-0.5; 0.7; -0.5];
 
-wSampleTimes = [0.04,0.03,0.02,0.015,0.01,0.005];
-wStiffAdapters = [6,9,12];
-wIdealSimulationTime = 5;
+wSampleTimes = [0.04,0.030,0.025,0.005];
+wStiffAdapters = [6,9,15];
+wIdealSimulationTime = 3;
 wRungeKuttaOrder = 3;
 wSystem = Discretizer(1,A,B,C,D);
 
@@ -83,7 +83,7 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     clearvars -except wSampleTimes wStiffAdapters wIdealSimulationTime...
         wRungeKuttaOrder wSystem wPloter wSampleTimeIndex A B C D X0 dX
     
-    wSampleTime = wSampleTimes(wSampleTimeIndex)
+    wSampleTime = wSampleTimes(wSampleTimeIndex);
     wSimulationTime = ceil(wIdealSimulationTime/wSampleTime)*wSampleTime;
     wSystem.mSetSampleTime(wSampleTime);
     
@@ -117,33 +117,53 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     % *****************      RK3 EQUATIONS      ****************** %
     % ************************************************************ %
     
-    for h=1:1
-        g = wStiffAdapters(h); %g=9 => stable at 40ms, precise at 0.15 ?
+    for h=1:length(wStiffAdapters)
         
-        %Kutta's third-order method
+        g = wStiffAdapters(h);
+        
+        %Kutta's third-order method: g=6.
         %0   |  0   0   0
         %1/2 |  1/2 0   0
         %3/4 |  0   3/4 0
         %------------------
         %    | 2/9  3/9 4/9
-        wNmax = fix(wSimulationTime/wSampleTime)-1;
-        [oX,oT] = RK3.sProcessRungeKutta([2/9 3/9 4/9], [1/2,0;0,3/4], X0, ones(1,wNmax), {A,B,C,D}, wNmax, wSampleTime, dX);
+        
+        wBr = [1/2,0;0,3/4];        
+        wCr3 = 4/9;
+        
+        wNmax = fix(wSimulationTime/wSampleTime);
+        
+        wIsPrecision3Computed = exist('oXp3','var') && exist('oTp3','var');
+        
+        if(not(wIsPrecision3Computed))                    
+            [oXp3,oTp3] = RK3.sProcessRungeKutta(RK3.sComputeCrOrder3(wCr3,wBr), wBr, X0, ones(1,wNmax), {A,B,C,D}, wNmax, wSampleTime, dX);
+        end
+        
+        [oXp2,oTp2] = RK3.sProcessRungeKutta(RK3.sComputeCrOrder3(wCr3,wBr,g), wBr, X0, ones(1,wNmax), {A,B,C,D}, wNmax, wSampleTime, dX);
         
         wHandle = wPloter.mDrawStandardPlot({[SimOutput.Continuous_signal.Time...
             ,SimOutput.Continuous_signal.Data]...
-            ,[oT;C*oX]}...
+            ,[oTp2;C*oXp2]}...
             ,'stairs'...
             ,['ODE3 vs RK3 g=',num2str(g),wSampleTimeLegend]...
             ,'Time (s)'...
             ,'Step Response'...
-            ,{'ODE3';'RK3 Recursive equations'});
+            ,{'ODE3';'Rk3 precision 2'});        
         
-        wPloter.mDrawStandardPlot({[oT;C*oX]}...
+        wPloter.mDrawStandardPlot({[oTp2;C*oXp2]...
+            ,[oTp3;C*oXp3]}...
             ,'stairs'...
-            ,['RK3 g=',num2str(g),wSampleTimeLegend]...
+            ,['Rk3 vs Rk3 g=',num2str(g),wSampleTimeLegend]...
             ,'Time (s)'...
             ,'Step Response'...
-            ,{'RK3 Recursive equations'});
+            ,{'Rk3 precision 2','Rk3 precision 3'});
+     
+         wPloter.mDrawStandardPlot({[oTp2;C*oXp2]}...
+            ,'stairs'...
+            ,['Rk3 g=',num2str(g),wSampleTimeLegend]...
+            ,'Time (s)'...
+            ,'Step Response'...
+            ,{'Rk3 precision 2'});
         
     end
     wPloter.mDrawStandardPlot({[SimOutput.Continuous_signal.Time...
