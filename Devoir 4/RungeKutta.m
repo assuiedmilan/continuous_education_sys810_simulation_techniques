@@ -2,7 +2,7 @@ classdef RungeKutta < handle
     
     methods(Static)
         
-        function [ oX,  oT ] = sProcessRungeKutta(iCr, iBr, iX0, iInput, iSystem, iNmax, iSampleTime, iDXhandle)
+        function [ oX,  oT ] = sProcessRungeKutta(iCr, iBr, iX0, iInput, iNmax, iSampleTime, iDXhandle)
             
             wMatlabIndexBias = 1;
             
