@@ -1,4 +1,4 @@
-classdef RK3 < handle
+classdef RungeKutta < handle
     
     methods(Static)
         
