@@ -38,7 +38,8 @@ wSystem = Discretizer(1,A,B,C,D);
 % ************************************************************ %
 % *****************      RK3 STIFFNESS      ****************** %
 % ************************************************************ %
-wStiffnessRatio = max(abs(real(wSystem.mGetPoles('continuous'))))/min(abs(real(wSystem.mGetPoles('continuous'))));
+wStiffnessRatio = max(abs(real(wSystem.mGetPoles('continuous'))))...
+    /min(abs(real(wSystem.mGetPoles('continuous'))));
 
 % ************************************************************ %
 % *****************     RK3 DISCRETE POLES  ****************** %
@@ -106,12 +107,15 @@ for wSampleTimeIndex = 1:length(wSampleTimes)
     % ************************************************************ %
     % *****************      RK3 STABILITY      ****************** %
     % ************************************************************ %
-    wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder),wSampleTimeLegend],wRungeKuttaOrder);
+    wSystem.mComputeStabilityRegion(['Runge-Kutta order '...,
+        num2str(wRungeKuttaOrder),wSampleTimeLegend],wRungeKuttaOrder);
     
     % ************************************************************ %
     % *************      RK3 STIFFED STABILITY      ************** %
     % ************************************************************ %
-    wSystem.mComputeStabilityRegion(['Runge-Kutta order ',num2str(wRungeKuttaOrder),' precision ',num2str(wRungeKuttaOrder-1),wSampleTimeLegend],wRungeKuttaOrder,wStiffAdapters);
+    wSystem.mComputeStabilityRegion(['Runge-Kutta order '...
+        ,num2str(wRungeKuttaOrder),' precision ',num2str(wRungeKuttaOrder-1)...
+        ,wSampleTimeLegend],wRungeKuttaOrder,wStiffAdapters);
     
     % ************************************************************ %
     % *****************      RK3 EQUATIONS      ****************** %
