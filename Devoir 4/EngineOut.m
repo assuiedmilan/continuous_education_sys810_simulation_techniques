@@ -31,7 +31,7 @@ X0 = [-0.5; 0.7; -0.5];
 
 wSampleTimes = [0.04,0.030,0.025,0.005];
 wStiffAdapters = [6,9,15];
-wIdealSimulationTime = 3;
+wIdealSimulationTime = 4;
 wRungeKuttaOrder = 3;
 wSystem = Discretizer(1,A,B,C,D);
 
